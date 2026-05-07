@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  irrigation-mysql:
+    image: mysql:latest
+    container_name: irrigation-system-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: irrigation_system_db
+      MYSQL_USER: admin_user
+      MYSQL_PASSWORD: irrigation_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_irrigation_data:/var/lib/mysql
+      # - ./irrigation-system/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - irrigation-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_irrigation_data:
+
+networks:
+  irrigation-network:
+    driver: bridge
