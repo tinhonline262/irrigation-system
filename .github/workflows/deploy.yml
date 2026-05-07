@@ -74,7 +74,7 @@ jobs:
             fi
 
             # No aws CLI needed — use the token directly
-            echo "$ECR_TOKEN" | docker login --username AWS --password-stdin $ECR_REGISTRY
+            echo "$ECR_TOKEN" | sudo docker login --username AWS --password-stdin $ECR_REGISTRY
 
             sudo docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
