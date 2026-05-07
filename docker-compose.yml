@@ -41,7 +41,7 @@ services:
       retries: 5
 
   irrigation-app:
-    image: ${ECR_REGISTRY:-tker}/irrigation-system:${IMAGE_TAG:-latest}
+    image: ${ECR_REGISTRY:-tker}/${ECR_REPOSITORY:-irrigation-system}:${IMAGE_TAG:-latest}
     container_name: ${CONTAINER_NAME:-irrigation-system}
     ports:
       - "80:8080"
