@@ -53,30 +53,26 @@ jobs:
           TOKEN=$(aws ecr get-login-password --region ${{ env.AWS_REGION }})
           echo "token=$TOKEN" >> $GITHUB_OUTPUT
 
-      - name: Prepare SSH key
-        run: |
-          mkdir -p "$GITHUB_WORKSPACE/.ssh"
-          printf '%b' '${{ secrets.EC2_SSH_KEY }}' > "$GITHUB_WORKSPACE/.ssh/ec2_key"
-          chmod 600 "$GITHUB_WORKSPACE/.ssh/ec2_key"
-
-      - name: Copy docker-compose via scp
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key_path: ${{ github.workspace }}/.ssh/ec2_key
-          source: "docker-compose.yml"
-          target: "~/"
-
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
-          key_path: ${{ github.workspace }}/.ssh/ec2_key
+          key: ${{ secrets.EC2_SSH_KEY }}
 
           envs: ECR_TOKEN,ECR_REGISTRY,ECR_REPOSITORY,CONTAINER_NAME,IMAGE_ENV,HOST_SMTP,PORT_SMTP,USERNAME_SMTP,PASSWORD_SMTP,JWT_SECRET_KEY,IMAGE_TAG,MAIL_SENDER_FROM,DBMS_ROOT_PASSWORD,DBMS_USERNAME,DBMS_PASSWORD,RABBITMQ_USERNAME,RABBITMQ_PASSWORD
           script: |
+            REPO_DIR="$HOME/irrigation-system"
+
+            if [ -d "$REPO_DIR/.git" ]; then
+              cd "$REPO_DIR"
+              git fetch origin main
+              git reset --hard origin/main
+            else
+              git clone --depth 1 --branch main https://github.com/tinhonline262/irrigation-system.git "$REPO_DIR"
+              cd "$REPO_DIR"
+            fi
+
             # No aws CLI needed — use the token directly
             echo "$ECR_TOKEN" | docker login --username AWS --password-stdin $ECR_REGISTRY
 
