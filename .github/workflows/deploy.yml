@@ -76,7 +76,7 @@ jobs:
             # No aws CLI needed — use the token directly
             echo "$ECR_TOKEN" | docker login --username AWS --password-stdin $ECR_REGISTRY
 
-            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            sudo docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
             # Create .env file securely on the server
             cat << EOF > .env
@@ -98,15 +98,15 @@ jobs:
             MAIL_SENDER_FROM=$MAIL_SENDER_FROM
             EOF
 
-            docker compose down || true
-            docker compose up -d
+            sudo docker compose down || true
+            sudo docker compose up -d
             
             # Remove .env for security after deploying
             rm .env
             
-            docker images $ECR_REGISTRY/$ECR_REPOSITORY --format "{{.ID}}" \
+            sudo docker images $ECR_REGISTRY/$ECR_REPOSITORY --format "{{.ID}}" \
                           | tail -n +6 \
-                          | xargs -r docker rmi
+                          | xargs -r sudo docker rmi
 
         env:
           ECR_TOKEN: ${{ steps.ecr-token.outputs.token }}
