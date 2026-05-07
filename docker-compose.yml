@@ -40,34 +40,34 @@ services:
       timeout: 5s
       retries: 5
 
-  # irrigation-app:
-  #   image: ${ECR_REGISTRY:-tker}/irrigation-system:${IMAGE_TAG:-latest}
-  #   container_name: ${CONTAINER_NAME:-irrigation-system}
-  #   ports:
-  #     - "80:8080"
-  #   environment:
-  #     - SPRING_PROFILES_ACTIVE=${ENVIRONMENT_CONFIG:-prod}
-  #     - DATABASE_URL=jdbc:mysql://irrigation-mysql:3306/irrigation_system_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-  #     - DATABASE_USERNAME=${DBMS_USERNAME:-admin_user}
-  #     - DATABASE_PASSWORD=${DBMS_PASSWORD:-irrigation_password}
-  #     - RABBITMQ_HOST=rabbitmq
-  #     - RABBITMQ_PORT=5672
-  #     - RABBITMQ_USERNAME=${RABBITMQ_USERNAME:-rabbitmq_user}
-  #     - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-rabbitmq_password}
-  #     - HOST_SMTP=${HOST_SMTP}
-  #     - PORT_SMTP=${PORT_SMTP}
-  #     - USERNAME_SMTP=${USERNAME_SMTP}
-  #     - PASSWORD_SMTP=${PASSWORD_SMTP}
-  #     - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-  #     - MAIL_SENDER_FROM=${MAIL_SENDER_FROM}
-  #   networks:
-  #     - irrigation-network
-  #   depends_on:
-  #     irrigation-mysql:
-  #       condition: service_healthy
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   restart: unless-stopped
+  irrigation-app:
+    image: ${ECR_REGISTRY:-tker}/irrigation-system:${IMAGE_TAG:-latest}
+    container_name: ${CONTAINER_NAME:-irrigation-system}
+    ports:
+      - "80:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${ENVIRONMENT_CONFIG:-prod}
+      - DATABASE_URL=jdbc:mysql://irrigation-mysql:3306/irrigation_system_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - DATABASE_USERNAME=${DBMS_USERNAME:-admin_user}
+      - DATABASE_PASSWORD=${DBMS_PASSWORD:-irrigation_password}
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME:-rabbitmq_user}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-rabbitmq_password}
+      - HOST_SMTP=${HOST_SMTP}
+      - PORT_SMTP=${PORT_SMTP}
+      - USERNAME_SMTP=${USERNAME_SMTP}
+      - PASSWORD_SMTP=${PASSWORD_SMTP}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - MAIL_SENDER_FROM=${MAIL_SENDER_FROM}
+    networks:
+      - irrigation-network
+    depends_on:
+      irrigation-mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   mysql_irrigation_data:
