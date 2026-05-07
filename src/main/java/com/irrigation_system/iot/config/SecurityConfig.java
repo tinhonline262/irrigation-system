@@ -4,7 +4,6 @@ import com.irrigation_system.iot.filter.JwtBlacklistFilter;
 import com.irrigation_system.iot.handler.CustomAuthenticationFailureHandler;
 import com.irrigation_system.iot.handler.OAuth2LoginSuccessHandler;
 import com.irrigation_system.iot.properties.JwtProperties;
-import com.irrigation_system.iot.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,7 +35,6 @@ import java.util.Optional;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
     private final JwtProperties jwtProperties;
@@ -71,13 +69,6 @@ public class SecurityConfig {
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(customJwtDecoder())
                         .jwtAuthenticationConverter(jwtAuthenticationConverter())))
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService) // mapping oauth2 info to user in db
-                        )
-                        .successHandler(oAuth2LoginSuccessHandler) // generate token or redirect
-                        .failureHandler(customAuthenticationFailureHandler)
-                )
                 .httpBasic(Customizer.withDefaults());
         return http.build();
     }

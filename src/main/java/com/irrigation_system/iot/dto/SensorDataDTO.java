@@ -1,7 +1,7 @@
 package com.irrigation_system.iot.dto;
 
 import lombok.Data;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 public class SensorDataDTO {
@@ -9,5 +9,5 @@ public class SensorDataDTO {
     private Double temperature;
     private Double humidity;
     private Double soilMoisture;
-    private LocalDateTime timestamp;
+    private Instant timestamp;
 }
