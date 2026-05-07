@@ -12,6 +12,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+        jdbc:
+          batch_size: 200
     show-sql: true
     open-in-view: false
   flyway:
@@ -19,6 +21,18 @@ spring:
     locations: classpath:db/migration
   cache:
     type: caffeine
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:rabbitmq_user}
+    password: ${RABBITMQ_PASSWORD:rabbitmq_password}
+    listener:
+      simple:
+        concurrency: 5
+        max-concurrency: 10
+        prefetch: 200
+        batch-size: 200
+        consumer-batch-enabled: true
   security:
     oauth2:
       client:
