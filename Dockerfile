@@ -10,7 +10,7 @@ COPY src ./src
 RUN mvn -B clean package -DskipTests
 
 # Stage 2: runtime image
-FROM amazoncorretto:21-jre
+FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 
