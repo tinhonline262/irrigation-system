@@ -9,8 +9,10 @@ import com.irrigation_system.iot.exception.ResourceNotFoundException;
 import com.irrigation_system.iot.mapper.DeviceMapper;
 import com.irrigation_system.iot.repository.DeviceRepository;
 import com.irrigation_system.iot.repository.UserRepository;
+import com.irrigation_system.iot.service.AuditLogService;
 import com.irrigation_system.iot.service.DeviceService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,11 +22,13 @@ import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DeviceServiceImpl implements DeviceService {
 
     private final DeviceRepository deviceRepository;
     private final UserRepository userRepository;
     private final DeviceMapper deviceMapper;
+    private final AuditLogService auditLogService;
 
     @Override
     @Transactional
@@ -40,6 +44,7 @@ public class DeviceServiceImpl implements DeviceService {
         device.setCreatedAt(Instant.now());
 
         device = deviceRepository.save(device);
+        log.info("Device {} created", device.getName());
 
         DeviceDTO deviceDTO = new DeviceDTO();
         deviceDTO.setId(device.getId());
@@ -48,7 +53,7 @@ public class DeviceServiceImpl implements DeviceService {
         deviceDTO.setUsername(user.getUsername());
         deviceDTO.setStatus(device.getStatus());
         deviceDTO.setAutoWaterEnabled(device.getAutoWaterEnabled());
-
+        auditLogService.logAction("CREATE_DEVICE", device.getId(), "{\"deviceName\":\"" + device.getName() + "\"}");
         return deviceDTO;
     }
 
