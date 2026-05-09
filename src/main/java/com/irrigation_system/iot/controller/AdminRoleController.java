@@ -1,7 +1,9 @@
 package com.irrigation_system.iot.controller;
 
 import com.irrigation_system.iot.dto.ApiResponse;
+import com.irrigation_system.iot.dto.CreatePermissionDTO;
 import com.irrigation_system.iot.dto.CreateRoleDTO;
+import com.irrigation_system.iot.dto.PermissionDTO;
 import com.irrigation_system.iot.dto.RoleDTO;
 import com.irrigation_system.iot.dto.UpdateRolePermissionsDTO;
 import com.irrigation_system.iot.service.RoleService;
@@ -36,6 +38,38 @@ public class AdminRoleController {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/permissions")
+    @PreAuthorize("hasAuthority('ROLE_READ_ALL')")
+    public ResponseEntity<ApiResponse<Page<PermissionDTO>>> getAllPermissions(
+            @PageableDefault(size = 10) Pageable pageable) {
+
+        Page<PermissionDTO> permissions = roleService.getAllPermissions(pageable);
+
+        ApiResponse<Page<PermissionDTO>> response = ApiResponse.<Page<PermissionDTO>>builder()
+                .status(HttpStatus.OK.value())
+                .message("Permissions retrieved successfully")
+                .data(permissions)
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/permissions")
+    @PreAuthorize("hasAuthority('ROLE_CREATE')")
+    public ResponseEntity<ApiResponse<PermissionDTO>> createPermission(
+            @Valid @RequestBody CreatePermissionDTO createDto) {
+
+        PermissionDTO createdPermission = roleService.createPermission(createDto);
+
+        ApiResponse<PermissionDTO> response = ApiResponse.<PermissionDTO>builder()
+                .status(HttpStatus.CREATED.value())
+                .message("Permission created successfully")
+                .data(createdPermission)
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PostMapping

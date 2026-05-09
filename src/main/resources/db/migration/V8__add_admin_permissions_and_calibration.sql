@@ -16,6 +16,16 @@ INSERT INTO permission (id, name, description) VALUES
     ('perm-11', 'ROLE_UPDATE', 'Update role permissions'),
     ('perm-12', 'ROLE_READ_ALL', 'Read all roles in the system');
 
+INSERT INTO permission (
+    id,
+    name,
+    description
+) VALUES (
+             'perm-13',
+             'DEVICE_CREATE',
+             'Create new devices'
+         );
+
 -- Assign new permissions to ADMIN role (role-1)
 INSERT INTO role_permissions (role_id, permission_id) VALUES
     ('role-1', 'perm-5'),
@@ -25,4 +35,5 @@ INSERT INTO role_permissions (role_id, permission_id) VALUES
     ('role-1', 'perm-9'),
     ('role-1', 'perm-10'),
     ('role-1', 'perm-11'),
-    ('role-1', 'perm-12');
+    ('role-1', 'perm-12'),
+    ('role-1', 'perm-13');
