@@ -1,0 +1,16 @@
+package com.irrigation_system.iot.dto;
+
+import lombok.Data;
+import java.time.Instant;
+
+@Data
+public class DeviceDTO {
+    private String id;
+    private String name;
+    private String userId;
+    private String username;
+    private String status;
+    private Boolean autoWaterEnabled;
+    private Float moistureThresholdLow;
+    private Float moistureThresholdHigh;
+}
