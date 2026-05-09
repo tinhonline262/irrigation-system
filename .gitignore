@@ -1,0 +1,15 @@
+# IDE
+.idea/
+*.iml
+
+# Maven
+target/
+*.log
+
+# Environment variables
+.env
+.env.*
+
+# OS generated files
+.DS_Store
+Thumbs.db
