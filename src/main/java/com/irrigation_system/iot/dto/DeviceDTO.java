@@ -13,4 +13,7 @@ public class DeviceDTO {
     private Boolean autoWaterEnabled;
     private Float moistureThresholdLow;
     private Float moistureThresholdHigh;
+    private Float soilMoistureOffset;
+    private Float airTemperatureOffset;
+    private Float airHumidityOffset;
 }
