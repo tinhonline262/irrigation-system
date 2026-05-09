@@ -1,6 +1,7 @@
 package com.irrigation_system.iot.controller;
 
 import com.irrigation_system.iot.dto.ApiResponse;
+import com.irrigation_system.iot.dto.ResetPasswordRequest;
 import com.irrigation_system.iot.dto.UpdateUserRolesDTO;
 import com.irrigation_system.iot.dto.UserProfileDTO;
 import com.irrigation_system.iot.service.UserService;
@@ -52,5 +53,29 @@ public class AdminUserController {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{id}/reset-password")
+    // Note: Use a descriptive permission or USER_UPDATE if 'USER_RESET_PASSWORD' isn't explicitly defined.
+    // For now omitting the specific pre-authorize as per requirements, but typically @PreAuthorize is needed
+    // @PreAuthorize("hasAuthority('USER_UPDATE')") 
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
+            @PathVariable String id,
+            @Valid @RequestBody ResetPasswordRequest request) {
+        userService.resetPassword(id, request.getNewPassword());
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .status(HttpStatus.OK.value())
+                .message("Password reset successfully")
+                .build());
+    }
+
+    @DeleteMapping("/{id}")
+    // @PreAuthorize("hasAuthority('USER_DELETE')")
+    public ResponseEntity<ApiResponse<Void>> softDeleteUser(@PathVariable String id) {
+        userService.deleteUserById(id);
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .status(HttpStatus.OK.value())
+                .message("User soft deleted successfully")
+                .build());
     }
 }

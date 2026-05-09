@@ -16,9 +16,13 @@ public interface UserService {
 
     void createUser(SignUpEntity signUpEntity);
 
-    void deleteUser(String id);
+    void deleteUser(String username);
     
     Page<UserProfileDTO> getAllUsers(Pageable pageable);
     
     UserProfileDTO updateUserRoles(String id, UpdateUserRolesDTO adminUpdateUserRolesDTO);
+
+    void deleteUserById(String id);
+
+    void resetPassword(String id, String newPassword);
 }
