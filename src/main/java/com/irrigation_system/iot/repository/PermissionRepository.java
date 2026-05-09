@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface PermissionRepository extends JpaRepository<PermissionEntity, String> {
     List<PermissionEntity> findAllByNameIn(List<String> names);
+    boolean existsByName(String name);
 }

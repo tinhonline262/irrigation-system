@@ -1,6 +1,8 @@
 package com.irrigation_system.iot.config;
 
 import com.irrigation_system.iot.filter.JwtBlacklistFilter;
+import com.irrigation_system.iot.handler.CustomAccessDeniedHandler;
+import com.irrigation_system.iot.handler.CustomAuthenticationEntryPoint;
 import com.irrigation_system.iot.handler.CustomAuthenticationFailureHandler;
 import com.irrigation_system.iot.handler.OAuth2LoginSuccessHandler;
 import com.irrigation_system.iot.properties.JwtProperties;
@@ -37,6 +39,8 @@ public class SecurityConfig {
 
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final JwtProperties jwtProperties;
     private final JwtBlacklistFilter jwtBlacklistFilter;
 
@@ -67,7 +71,14 @@ public class SecurityConfig {
                 .sessionManagement(sess -> sess
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(customJwtDecoder())
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                )
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                        .jwt(jwtConfigurer -> jwtConfigurer.decoder(customJwtDecoder())
                         .jwtAuthenticationConverter(jwtAuthenticationConverter())))
                 .httpBasic(Customizer.withDefaults());
         return http.build();
