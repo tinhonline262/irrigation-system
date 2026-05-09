@@ -1,5 +1,6 @@
 package com.irrigation_system.iot.service.impl;
 
+import com.irrigation_system.iot.dto.UpdateUserRolesDTO;
 import com.irrigation_system.iot.dto.UserProfileDTO;
 import com.irrigation_system.iot.entity.RoleEntity;
 import com.irrigation_system.iot.entity.SignUpEntity;
@@ -8,14 +9,19 @@ import com.irrigation_system.iot.enumeration.UserDefaultType;
 import com.irrigation_system.iot.exception.ResourceAlreadyExistsException;
 import com.irrigation_system.iot.exception.ResourceNotFoundException;
 import com.irrigation_system.iot.mapper.UserMapper;
+import com.irrigation_system.iot.repository.RoleRepository;
 import com.irrigation_system.iot.repository.UserRepository;
 import com.irrigation_system.iot.service.RoleService;
 import com.irrigation_system.iot.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -27,6 +33,7 @@ class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final RoleService roleService;
+    private final RoleRepository roleRepository;
 
     @Override
     public UserProfileDTO getProfileByUsername(String username) {
@@ -66,6 +73,24 @@ class UserServiceImpl implements UserService {
         // Soft delete
         userRepository.delete(userEntity);
         log.info("User {} deleted (soft delete)", username);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<UserProfileDTO> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable).map(userMapper::mapToProfileDTO);
+    }
+
+    @Override
+    public UserProfileDTO updateUserRoles(String id, UpdateUserRolesDTO adminUpdateUserRolesDTO) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+        
+        List<RoleEntity> roles = roleRepository.findAllByNameIn(adminUpdateUserRolesDTO.getRoles());
+        user.setRoles(new HashSet<>(roles));
+        
+        user = userRepository.save(user);
+        return userMapper.mapToProfileDTO(user);
     }
 
     private UserEntity getUserEntity(String username) {
