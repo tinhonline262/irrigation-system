@@ -1,6 +1,9 @@
 package com.irrigation_system.iot.config;
 
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -22,6 +25,16 @@ public class RabbitMQConfig {
     @Bean
     public Queue sensorDataQueue() {
         return new Queue(SENSOR_DATA_QUEUE, true);
+    }
+
+    @Bean
+    public TopicExchange mqttTopicExchange() {
+        return new TopicExchange("amq.topic");
+    }
+
+    @Bean
+    public Binding mqttBinding(Queue sensorDataQueue, TopicExchange mqttTopicExchange) {
+        return BindingBuilder.bind(sensorDataQueue).to(mqttTopicExchange).with("sensor.#");
     }
 
     @Bean

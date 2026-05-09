@@ -16,7 +16,7 @@
               "// Generate random sensor data",
               "const deviceIds = ['device-01', 'device-02', 'device-03', 'device-04', 'device-05', 'greenhouse-A', 'greenhouse-B', 'field-1'];",
               "const randomDeviceId = deviceIds[Math.floor(Math.random() * deviceIds.length)];",
-              "const temperature = (Math.random() * 35 + 5).toFixed(2); // 5°C to 40°C",
+              "const temperature = (Math.random() * 35 + 5).toFixed(2); // 5\u00b0C to 40\u00b0C",
               "const humidity = (Math.random() * 100).toFixed(2); // 0-100%",
               "const soilMoisture = (Math.random() * 100).toFixed(2); // 0-100%",
               "const timestamp = new Date().toISOString();",
@@ -28,7 +28,7 @@
               "pm.environment.set('soil_moisture', soilMoisture);",
               "pm.environment.set('timestamp', timestamp);",
               "",
-              "console.log(`Generated: Device=${randomDeviceId}, Temp=${temperature}°C, Humidity=${humidity}%, Soil=${soilMoisture}%`);"
+              "console.log(`Generated: Device=${randomDeviceId}, Temp=${temperature}\u00b0C, Humidity=${humidity}%, Soil=${soilMoisture}%`);"
             ],
             "type": "text/javascript"
           }
@@ -113,6 +113,83 @@
           ]
         }
       }
+    },
+    {
+      "name": "Admin Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const responseData = pm.response.json();",
+              "    if (responseData.data && responseData.data.token) {",
+              "        pm.environment.set('jwt_token', responseData.data.token);",
+              "        console.log('JWT Token set!');",
+              "    }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Admin Device",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{admin_user_id}}\",\n  \"name\": \"Test Admin Device 1\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/devices",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "devices"
+          ]
+        }
+      }
     }
   ],
   "variable": [
@@ -144,6 +221,16 @@
     {
       "key": "timestamp",
       "value": "2026-05-07T10:00:00Z",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_user_id",
+      "value": "user-admin-uuid",
       "type": "string"
     }
   ]

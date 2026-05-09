@@ -14,7 +14,7 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         jdbc:
           batch_size: 200
-    show-sql: true
+    show-sql: false
     open-in-view: false
   flyway:
     enabled: true

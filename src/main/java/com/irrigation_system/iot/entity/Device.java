@@ -18,9 +18,11 @@ import java.time.Instant;
 public class Device {
     @Id
     @Size(max = 36)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, length = 36)
     private String id;
 
+    @Version
     @NotNull
     @ColumnDefault("0")
     @Column(name = "ol", nullable = false)

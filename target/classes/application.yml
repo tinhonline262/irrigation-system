@@ -14,11 +14,12 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         jdbc:
           batch_size: 200
-    show-sql: true
+    show-sql: false
     open-in-view: false
   flyway:
     enabled: true
     locations: classpath:db/migration
+    baseline-on-migrate: true
   cache:
     type: caffeine
   rabbitmq:

@@ -1,4 +1,4 @@
-package com.irrigation_system.iot.service;
+package com.irrigation_system.iot.queue;
 
 import com.irrigation_system.iot.config.RabbitMQConfig;
 import com.irrigation_system.iot.dto.SensorDataDTO;
