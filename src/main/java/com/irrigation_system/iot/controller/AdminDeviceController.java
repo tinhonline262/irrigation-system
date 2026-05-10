@@ -3,6 +3,7 @@ package com.irrigation_system.iot.controller;
 import com.irrigation_system.iot.dto.ApiResponse;
 import com.irrigation_system.iot.dto.CalibrateDeviceDTO;
 import com.irrigation_system.iot.dto.CreateDeviceDTO;
+import com.irrigation_system.iot.dto.DeviceControlDTO;
 import com.irrigation_system.iot.dto.DeviceDTO;
 import com.irrigation_system.iot.service.DeviceService;
 import jakarta.validation.Valid;
@@ -75,4 +76,6 @@ public class AdminDeviceController {
 
         return ResponseEntity.ok(response);
     }
+
 }
+

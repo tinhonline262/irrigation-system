@@ -7,6 +7,7 @@ import com.irrigation_system.iot.entity.Device;
 import com.irrigation_system.iot.entity.UserEntity;
 import com.irrigation_system.iot.exception.ResourceNotFoundException;
 import com.irrigation_system.iot.mapper.DeviceMapper;
+import com.irrigation_system.iot.queue.producer.DeviceControlProducer;
 import com.irrigation_system.iot.repository.DeviceRepository;
 import com.irrigation_system.iot.repository.UserRepository;
 import com.irrigation_system.iot.service.AuditLogService;
@@ -29,6 +30,7 @@ public class DeviceServiceImpl implements DeviceService {
     private final UserRepository userRepository;
     private final DeviceMapper deviceMapper;
     private final AuditLogService auditLogService;
+    private final DeviceControlProducer deviceControlProducer;
 
     @Override
     @Transactional
@@ -92,4 +94,18 @@ public class DeviceServiceImpl implements DeviceService {
         device = deviceRepository.save(device);
         return deviceMapper.mapToDTO(device);
     }
+
+    @Override
+    public void controlDevice(String id, String command) {
+        Device device = deviceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Device", "id", id));
+
+        deviceControlProducer.sendControlCommand(device.getId(), command);
+
+        auditLogService.logAction("CONTROL_DEVICE", device.getId(),
+                "{\"command\":\"" + command + "\"}");
+
+        log.info("Control command '{}' sent to device {} ({})", command, device.getName(), device.getId());
+    }
 }
+
