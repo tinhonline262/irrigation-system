@@ -1,0 +1,211 @@
+package com.irrigation_system.iot.service;
+
+import com.irrigation_system.iot.dto.WateringLogDTO;
+import com.irrigation_system.iot.dto.WateringLogPageDTO;
+import com.irrigation_system.iot.dto.WateringLogStatsDTO;
+import com.irrigation_system.iot.dto.WateringStatusDTO;
+import com.irrigation_system.iot.entity.Device;
+import com.irrigation_system.iot.entity.UserEntity;
+import com.irrigation_system.iot.entity.WateringLog;
+import com.irrigation_system.iot.repository.DeviceRepository;
+import com.irrigation_system.iot.repository.UserRepository;
+import com.irrigation_system.iot.repository.WateringLogRepository;
+import com.irrigation_system.iot.utility.AuthenticationUtils;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@Service
+@RequiredArgsConstructor
+public class WateringService {
+
+    private final DeviceRepository deviceRepository;
+    private final UserRepository userRepository;
+    private final WateringLogRepository wateringLogRepository;
+
+    public WateringLogDTO startManualWatering(String deviceId) {
+        Device device = deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
+
+        String username;
+        try {
+            username = AuthenticationUtils.getCurrentUsername();
+        } catch (IllegalStateException ex) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required");
+        }
+
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Authenticated user not found"));
+
+        WateringLog wateringLog = new WateringLog();
+        wateringLog.setId(UUID.randomUUID().toString());
+        wateringLog.setDevice(device);
+        wateringLog.setTriggeredBy(user);
+        wateringLog.setTriggerType("manual");
+        wateringLog.setStartedAt(Instant.now());
+
+        WateringLog savedLog = wateringLogRepository.save(wateringLog);
+
+        return WateringLogDTO.builder()
+                .id(savedLog.getId())
+                .deviceId(savedLog.getDevice().getId())
+                .triggeredBy(savedLog.getTriggeredBy().getUsername())
+                .triggerType(savedLog.getTriggerType())
+                .startedAt(savedLog.getStartedAt())
+                .endedAt(savedLog.getEndedAt())
+                .waterAmountMl(savedLog.getWaterAmountMl())
+                .build();
+    }
+
+    public WateringLogDTO stopManualWatering(String deviceId, Float waterAmountMl) {
+        Device device = deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
+
+        WateringLog wateringLog = wateringLogRepository
+                .findFirstByDevice_IdAndTriggerTypeAndEndedAtIsNullOrderByStartedAtDesc(device.getId(), "manual")
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No active manual watering session found for this device"));
+
+        wateringLog.setEndedAt(Instant.now());
+        wateringLog.setWaterAmountMl(waterAmountMl);
+
+        WateringLog savedLog = wateringLogRepository.save(wateringLog);
+
+        return WateringLogDTO.builder()
+                .id(savedLog.getId())
+                .deviceId(savedLog.getDevice().getId())
+                .triggeredBy(savedLog.getTriggeredBy() != null ? savedLog.getTriggeredBy().getUsername() : null)
+                .triggerType(savedLog.getTriggerType())
+                .startedAt(savedLog.getStartedAt())
+                .endedAt(savedLog.getEndedAt())
+                .waterAmountMl(savedLog.getWaterAmountMl())
+                .build();
+    }
+
+    public WateringStatusDTO getWateringStatus(String deviceId) {
+        deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
+
+        return wateringLogRepository.findFirstByDevice_IdAndEndedAtIsNullOrderByStartedAtDesc(deviceId)
+                .map(wateringLog -> {
+                    long elapsedSeconds = Duration.between(wateringLog.getStartedAt(), Instant.now()).getSeconds();
+                    return WateringStatusDTO.builder()
+                            .deviceId(deviceId)
+                            .running(true)
+                            .wateringLogId(wateringLog.getId())
+                            .triggerType(wateringLog.getTriggerType())
+                            .startedAt(wateringLog.getStartedAt())
+                            .elapsedSeconds(elapsedSeconds)
+                            .build();
+                })
+                .orElseGet(() -> WateringStatusDTO.builder()
+                        .deviceId(deviceId)
+                        .running(false)
+                        .build());
+    }
+
+    public WateringLogPageDTO getWateringLogs(String deviceId, int page, int size) {
+        deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
+
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "startedAt"));
+        Page<WateringLog> logPage = wateringLogRepository.findByDevice_IdOrderByStartedAtDesc(deviceId, pageRequest);
+
+        List<WateringLogDTO> logs = logPage.stream()
+                .map(log -> WateringLogDTO.builder()
+                        .id(log.getId())
+                        .deviceId(log.getDevice().getId())
+                        .triggeredBy(log.getTriggeredBy() != null ? log.getTriggeredBy().getUsername() : null)
+                        .triggerType(log.getTriggerType())
+                        .startedAt(log.getStartedAt())
+                        .endedAt(log.getEndedAt())
+                        .waterAmountMl(log.getWaterAmountMl())
+                        .build())
+                .collect(Collectors.toList());
+
+        return WateringLogPageDTO.builder()
+                .deviceId(deviceId)
+                .page(logPage.getNumber())
+                .size(logPage.getSize())
+                .totalElements(logPage.getTotalElements())
+                .totalPages(logPage.getTotalPages())
+                .logs(logs)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public void exportWateringLogsCsv(String deviceId, OutputStream outputStream) {
+        deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
+
+        try (Stream<WateringLog> wateringLogs = wateringLogRepository.findByDevice_IdOrderByStartedAtDesc(deviceId);
+             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8))) {
+
+            writer.write("id,deviceId,triggeredBy,triggerType,startedAt,endedAt,waterAmountMl");
+            writer.newLine();
+
+            wateringLogs.forEach(log -> {
+                try {
+                    writer.write(String.join(",",
+                            csvEscape(log.getId()),
+                            csvEscape(log.getDevice().getId()),
+                            csvEscape(log.getTriggeredBy() != null ? log.getTriggeredBy().getUsername() : ""),
+                            csvEscape(log.getTriggerType()),
+                            csvEscape(log.getStartedAt() != null ? log.getStartedAt().toString() : ""),
+                            csvEscape(log.getEndedAt() != null ? log.getEndedAt().toString() : ""),
+                            csvEscape(log.getWaterAmountMl() != null ? log.getWaterAmountMl().toString() : "")
+                    ));
+                    writer.newLine();
+                } catch (IOException ex) {
+                    throw new UncheckedIOException(ex);
+                }
+            });
+            writer.flush();
+        } catch (UncheckedIOException ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to export watering logs", ex.getCause());
+        } catch (IOException ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to export watering logs", ex);
+        }
+    }
+
+    private String csvEscape(String value) {
+        if (value == null) {
+            return "";
+        }
+        String escaped = value.replace("\"", "\"\"");
+        if (escaped.contains(",") || escaped.contains("\"") || escaped.contains("\n") || escaped.contains("\r")) {
+            return "\"" + escaped + "\"";
+        }
+        return escaped;
+    }
+
+    public List<WateringLogStatsDTO> getWateringLogStats(String deviceId) {
+        deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
+
+        return wateringLogRepository.findDailyWateringStatsByDeviceId(deviceId).stream()
+                .map(row -> WateringLogStatsDTO.builder()
+                        .date(row[0] != null ? row[0].toString() : null)
+                        .totalWaterAmountMl(row[1] != null ? ((Number) row[1]).floatValue() : 0f)
+                        .wateringCount(row[2] != null ? ((Number) row[2]).longValue() : 0L)
+                        .build())
+                .collect(Collectors.toList());
+    }
+}
