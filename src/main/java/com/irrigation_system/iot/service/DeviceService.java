@@ -12,4 +12,5 @@ public interface DeviceService {
     Page<DeviceDTO> getAllDevices(Pageable pageable);
     void deleteDevice(String id);
     DeviceDTO calibrateDevice(String id, CalibrateDeviceDTO calibrateDto);
+    void controlDevice(String id, String command);
 }
