@@ -1,6 +1,8 @@
 spring:
   application:
     name: identity-service
+  main:
+    allow-bean-definition-overriding: true
   datasource:
     url: ${DATABASE_URL:jdbc:mysql://localhost:3306/irrigation_system_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
     username: ${DATABASE_USERNAME:admin_user}
@@ -54,7 +56,7 @@ spring:
         smtp:
           auth: true
           starttls:
-            enable: true
+            enable: false
 
 management:
   endpoints:
