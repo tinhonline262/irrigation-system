@@ -18,9 +18,11 @@ import java.time.Instant;
 public class Device {
     @Id
     @Size(max = 36)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, length = 36)
     private String id;
 
+    @Version
     @NotNull
     @ColumnDefault("0")
     @Column(name = "ol", nullable = false)
@@ -71,5 +73,16 @@ public class Device {
     @Column(name = "last_seen_at")
     private Instant lastSeenAt;
 
+    @ColumnDefault("0.0")
+    @Column(name = "soil_moisture_offset")
+    private Float soilMoistureOffset = 0.0f;
+
+    @ColumnDefault("0.0")
+    @Column(name = "air_temperature_offset")
+    private Float airTemperatureOffset = 0.0f;
+
+    @ColumnDefault("0.0")
+    @Column(name = "air_humidity_offset")
+    private Float airHumidityOffset = 0.0f;
 
 }

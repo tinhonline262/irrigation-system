@@ -31,6 +31,9 @@ services:
     ports:
       - "5672:5672"   # AMQP port
       - "15672:15672" # Management UI port
+      - "1883:1883"   # MQTT port
+    command: >
+      sh -c "rabbitmq-plugins enable --offline rabbitmq_mqtt && rabbitmq-server"
     networks:
       - irrigation-network
     restart: unless-stopped
