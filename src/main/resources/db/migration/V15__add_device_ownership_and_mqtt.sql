@@ -1,4 +1,4 @@
--- V12__add_device_ownership_and_mqtt.sql
+-- V15__add_device_ownership_and_mqtt.sql
 
 -- Cho phép thiết bị không gắn với user nào (UNCLAIMED)
 ALTER TABLE device MODIFY user_id VARCHAR(36) NULL;
