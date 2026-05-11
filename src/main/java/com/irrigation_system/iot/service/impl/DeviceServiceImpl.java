@@ -19,7 +19,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.irrigation_system.iot.utility.AuthenticationUtils;
+
 import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -96,17 +100,99 @@ public class DeviceServiceImpl implements DeviceService {
         return deviceMapper.mapToDTO(device);
     }
 
+
+    private UserEntity getCurrentUserEntity() {
+        String username = AuthenticationUtils.getCurrentUsername();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
+    }
+
     @Override
-    public void controlDevice(String id, String command) {
-        Device device = deviceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Device", "id", id));
+    @Transactional(readOnly = true)
+    public List<DeviceDTO> getMyDevices() {
+        UserEntity currentUser = getCurrentUserEntity();
+        return deviceRepository.findAll().stream()
+                .filter(d -> d.getUser() != null && d.getUser().getId().equals(currentUser.getId()))
+                .map(deviceMapper::mapToDTO)
+                .collect(Collectors.toList());
+    }
 
-        deviceControlProducer.sendControlCommand(device.getId(), command);
+    @Override
+    @Transactional
+    public DeviceDTO claimDevice(String chipId) {
+        UserEntity currentUser = getCurrentUserEntity();
+        Device device = deviceRepository.findByChipId(chipId)
+                .orElseThrow(() -> new ResourceNotFoundException("Device", "chipId", chipId));
 
-        auditLogService.logAction("CONTROL_DEVICE", device.getId(),
-                "{\"command\":\"" + command + "\"}");
+        if (device.getUser() != null) {
+            if (device.getUser().getId().equals(currentUser.getId())) {
+                return deviceMapper.mapToDTO(device); // Already owned by this user
+            }
+            throw new IllegalStateException("Device is already claimed by another user");
+        }
 
-        log.info("Control command '{}' sent to device {} ({})", command, device.getName(), device.getId());
+        device.setUser(currentUser);
+        device.setClaimedAt(java.time.Instant.now());
+        device = deviceRepository.save(device);
+
+        auditLogService.logAction("CLAIM_DEVICE", device.getId(), "{\"chipId\":\"" + chipId + "\"}");
+
+        return deviceMapper.mapToDTO(device);
+    }
+
+    @Override
+    @Transactional
+    public void unclaimDevice(String deviceId) {
+        UserEntity currentUser = getCurrentUserEntity();
+        Device device = deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Device", "id", deviceId));
+
+        if (device.getUser() == null || !device.getUser().getId().equals(currentUser.getId())) {
+            throw new IllegalStateException("You do not own this device");
+        }
+
+        device.setUser(null);
+        device.setClaimedAt(null);
+        deviceRepository.save(device);
+
+        auditLogService.logAction("UNCLAIM_DEVICE", device.getId(), "{}");
+    }
+
+    @Override
+    @Transactional
+    public DeviceDTO updateDeviceName(String deviceId, String newName) {
+        UserEntity currentUser = getCurrentUserEntity();
+        Device device = deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Device", "id", deviceId));
+
+        if (device.getUser() == null || !device.getUser().getId().equals(currentUser.getId())) {
+            throw new IllegalStateException("You do not own this device");
+        }
+
+        device.setName(newName);
+        device = deviceRepository.save(device);
+        return deviceMapper.mapToDTO(device);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DeviceDTO getMyDeviceDetail(String deviceId) {
+        UserEntity currentUser = getCurrentUserEntity();
+        Device device = deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Device", "id", deviceId));
+
+        if (device.getUser() == null || !device.getUser().getId().equals(currentUser.getId())) {
+            throw new IllegalStateException("You do not own this device");
+        }
+
+        return deviceMapper.mapToDTO(device);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DeviceDTO getAdminDeviceDetail(String deviceId) {
+        Device device = deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Device", "id", deviceId));
+        return deviceMapper.mapToDTO(device);
     }
 }
-

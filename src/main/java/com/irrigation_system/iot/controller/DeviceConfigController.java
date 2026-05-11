@@ -12,7 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/devices/{deviceId}/config")
+@RequestMapping("/api/v1/my/devices/{deviceId}/config")
 @RequiredArgsConstructor
 public class DeviceConfigController {
 

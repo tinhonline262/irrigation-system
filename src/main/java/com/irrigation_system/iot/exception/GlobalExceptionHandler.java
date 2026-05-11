@@ -19,7 +19,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler({
             ResourceNotFoundException.class, InvalidTokenException.class, BlacklistedTokenException.class,
-            SignUpNotValidException.class, LoginNotValidException.class, ResourceAlreadyExistsException.class
+            SignUpNotValidException.class, LoginNotValidException.class, ResourceAlreadyExistsException.class, IllegalStateException.class
     })
     ResponseEntity<ErrorResponseDTO> handleBadRequestsException(RuntimeException ex, WebRequest request) {
         return ExceptionHandlerUtils.generateErrorResponse(ex, request, HttpStatus.BAD_REQUEST);

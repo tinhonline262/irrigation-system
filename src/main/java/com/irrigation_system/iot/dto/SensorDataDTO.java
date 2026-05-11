@@ -5,7 +5,7 @@ import java.time.Instant;
 
 @Data
 public class SensorDataDTO {
-    private String deviceId;
+    private String chipId;
     private Double temperature;
     private Double humidity;
     private Double soilMoisture;

@@ -21,10 +21,22 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 public class RabbitMQConfig {
 
     public static final String SENSOR_DATA_QUEUE = "sensor.data.queue";
+    public static final String DEVICE_REGISTER_QUEUE = "device.register.queue";
+    public static final String DEVICE_STATUS_QUEUE = "device.status.queue";
 
     @Bean
     public Queue sensorDataQueue() {
         return new Queue(SENSOR_DATA_QUEUE, true);
+    }
+
+    @Bean
+    public Queue deviceRegisterQueue() {
+        return new Queue(DEVICE_REGISTER_QUEUE, true);
+    }
+
+    @Bean
+    public Queue deviceStatusQueue() {
+        return new Queue(DEVICE_STATUS_QUEUE, true);
     }
 
     @Bean
@@ -33,8 +45,18 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding mqttBinding(Queue sensorDataQueue, TopicExchange mqttTopicExchange) {
-        return BindingBuilder.bind(sensorDataQueue).to(mqttTopicExchange).with("sensor.#");
+    public Binding sensorMqttBinding(Queue sensorDataQueue, TopicExchange mqttTopicExchange) {
+        return BindingBuilder.bind(sensorDataQueue).to(mqttTopicExchange).with("sensor.data.#");
+    }
+
+    @Bean
+    public Binding registerMqttBinding(Queue deviceRegisterQueue, TopicExchange mqttTopicExchange) {
+        return BindingBuilder.bind(deviceRegisterQueue).to(mqttTopicExchange).with("device.register");
+    }
+
+    @Bean
+    public Binding statusMqttBinding(Queue deviceStatusQueue, TopicExchange mqttTopicExchange) {
+        return BindingBuilder.bind(deviceStatusQueue).to(mqttTopicExchange).with("device.status.#");
     }
 
     @Bean
@@ -51,6 +73,10 @@ public class RabbitMQConfig {
         return template;
     }
 
+    /**
+     * Batch factory — used by SensorDataConsumer (List<SensorDataDTO>).
+     * Default name kept so Spring Boot auto-wires it as the primary listener factory.
+     */
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
             ConnectionFactory connectionFactory,
@@ -61,6 +87,23 @@ public class RabbitMQConfig {
         factory.setBatchListener(true);
         factory.setConsumerBatchEnabled(true);
         factory.setBatchSize(200);
+        return factory;
+    }
+
+    /**
+     * Non-batch factory — used by DeviceMqttConsumer (single-message listeners).
+     * Explicitly disables batch mode to override any property-driven batch settings
+     * applied by the configurer (e.g. spring.rabbitmq.listener.simple.consumer-batch-enabled).
+     */
+    @Bean
+    public SimpleRabbitListenerContainerFactory singleRabbitListenerContainerFactory(
+            ConnectionFactory connectionFactory,
+            SimpleRabbitListenerContainerFactoryConfigurer configurer) {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        configurer.configure(factory, connectionFactory);
+        factory.setMessageConverter(jsonMessageConverter());
+        factory.setBatchListener(false);
+        factory.setConsumerBatchEnabled(false);
         return factory;
     }
 }

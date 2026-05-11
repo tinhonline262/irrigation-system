@@ -23,20 +23,6 @@ public class AdminDeviceController {
 
     private final DeviceService deviceService;
 
-    @PostMapping
-    @PreAuthorize("hasAuthority('DEVICE_CREATE')")
-    public ResponseEntity<ApiResponse<DeviceDTO>> createDevice(@Valid @RequestBody CreateDeviceDTO createDeviceDTO) {
-        DeviceDTO createdDevice = deviceService.createDevice(createDeviceDTO);
-
-        ApiResponse<DeviceDTO> response = ApiResponse.<DeviceDTO>builder()
-                .status(HttpStatus.CREATED.value())
-                .message("Device registered successfully")
-                .data(createdDevice)
-                .build();
-
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-
     @GetMapping
     @PreAuthorize("hasAuthority('DEVICE_READ_ALL')")
     public ResponseEntity<ApiResponse<Page<DeviceDTO>>> getAllDevices(
@@ -77,21 +63,16 @@ public class AdminDeviceController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{id}/control")
-    @PreAuthorize("hasAuthority('DEVICE_UPDATE')")
-    public ResponseEntity<ApiResponse<Void>> controlDevice(
-            @PathVariable String id,
-            @Valid @RequestBody DeviceControlDTO request) {
-        
-        deviceService.controlDevice(id, request.getCommand());
-
-        ApiResponse<Void> response = ApiResponse.<Void>builder()
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('DEVICE_READ_ALL')")
+    public ResponseEntity<ApiResponse<DeviceDTO>> getDeviceDetail(@PathVariable String id) {
+        DeviceDTO device = deviceService.getAdminDeviceDetail(id);
+        ApiResponse<DeviceDTO> response = ApiResponse.<DeviceDTO>builder()
                 .status(HttpStatus.OK.value())
-                .message("Device control command sent successfully")
+                .message("Device details retrieved successfully")
+                .data(device)
                 .build();
-
         return ResponseEntity.ok(response);
     }
-
 }
 

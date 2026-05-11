@@ -46,24 +46,24 @@ public class SensorDataConsumer {
             return;
         }
 
-        // Get all unique deviceIds
-        List<String> deviceIds = batch.stream()
-                .map(SensorDataDTO::getDeviceId)
+        // Get all unique chipIds
+        List<String> chipIds = batch.stream()
+                .map(SensorDataDTO::getChipId)
                 .distinct()
                 .collect(Collectors.toList());
 
-        // Fetch devices from DB
-        Map<String, Device> deviceMap = deviceRepository.findAllById(deviceIds).stream()
-                .collect(Collectors.toMap(Device::getId, Function.identity()));
+        // Fetch devices from DB by chipId
+        Map<String, Device> deviceMap = deviceRepository.findByChipIdIn(chipIds).stream()
+                .collect(Collectors.toMap(Device::getChipId, Function.identity()));
 
         List<AirSensorReading> airReadings = new ArrayList<>();
         List<SoilSensorReading> soilReadings = new ArrayList<>();
         Set<String> updatedDeviceIds = new LinkedHashSet<>();
 
         for (SensorDataDTO dto : batch) {
-            Device device = deviceMap.get(dto.getDeviceId());
+            Device device = deviceMap.get(dto.getChipId());
             if (device == null) {
-                log.warn("Device with id {} not found. Skipping sensor reading.", dto.getDeviceId());
+                log.warn("Device with chipId {} not found. Skipping sensor reading.", dto.getChipId());
                 continue;
             }
 
