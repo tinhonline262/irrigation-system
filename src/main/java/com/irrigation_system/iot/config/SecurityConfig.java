@@ -64,6 +64,7 @@ public class SecurityConfig {
                                 "/actuator/**",
                                 "/api/debug/**",
                                 "/swagger-ui/**",
+                                "/ws/**",
                                 "/v3/api-docs/**", "/v3/api-docs",
                                 "/swagger-ui.html",
                                 "/error"
@@ -96,6 +97,7 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", config);
+        source.registerCorsConfiguration("/ws/**", config);
         return source;
     }
 

@@ -65,6 +65,14 @@ public class Device {
     @Column(name = "status", nullable = false, length = 50)
     private String status;
 
+    @Column(name = "owner_id", length = 36)
+    private String ownerId;
+
+    @NotNull
+    @ColumnDefault("0")
+    @Column(name = "status_delay", nullable = false)
+    private Boolean statusDelay = false;
+
     @Column(name = "moisture_threshold_low")
     private Float moistureThresholdLow;
 

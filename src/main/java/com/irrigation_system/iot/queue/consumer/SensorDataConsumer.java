@@ -5,19 +5,24 @@ import com.irrigation_system.iot.dto.SensorDataDTO;
 import com.irrigation_system.iot.entity.AirSensorReading;
 import com.irrigation_system.iot.entity.Device;
 import com.irrigation_system.iot.entity.SoilSensorReading;
+import com.irrigation_system.iot.dto.DashboardSummaryDTO;
 import com.irrigation_system.iot.repository.AirSensorReadingRepository;
 import com.irrigation_system.iot.repository.DeviceRepository;
 import com.irrigation_system.iot.repository.SoilSensorReadingRepository;
+import com.irrigation_system.iot.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -30,6 +35,8 @@ public class SensorDataConsumer {
     private final DeviceRepository deviceRepository;
     private final AirSensorReadingRepository airSensorReadingRepository;
     private final SoilSensorReadingRepository soilSensorReadingRepository;
+    private final DashboardService dashboardService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional
     @RabbitListener(queues = RabbitMQConfig.SENSOR_DATA_QUEUE, containerFactory = "rabbitListenerContainerFactory")
@@ -51,6 +58,7 @@ public class SensorDataConsumer {
 
         List<AirSensorReading> airReadings = new ArrayList<>();
         List<SoilSensorReading> soilReadings = new ArrayList<>();
+        Set<String> updatedDeviceIds = new LinkedHashSet<>();
 
         for (SensorDataDTO dto : batch) {
             Device device = deviceMap.get(dto.getChipId());
@@ -69,6 +77,7 @@ public class SensorDataConsumer {
                 airReading.setHumidityPercent(dto.getHumidity().floatValue());
                 airReading.setRecordedAt(timestamp);
                 airReadings.add(airReading);
+                updatedDeviceIds.add(device.getId());
             }
 
             if (dto.getSoilMoisture() != null) {
@@ -78,6 +87,7 @@ public class SensorDataConsumer {
                 soilReading.setMoisturePercent(dto.getSoilMoisture().floatValue());
                 soilReading.setRecordedAt(timestamp);
                 soilReadings.add(soilReading);
+                updatedDeviceIds.add(device.getId());
             }
         }
 
@@ -86,6 +96,11 @@ public class SensorDataConsumer {
         }
         if (!soilReadings.isEmpty()) {
             soilSensorReadingRepository.saveAll(soilReadings);
+        }
+
+        for (String deviceId : updatedDeviceIds) {
+            DashboardSummaryDTO summary = dashboardService.getDashboardSummary(deviceId);
+            messagingTemplate.convertAndSend("/topic/dashboard/" + deviceId, summary);
         }
 
         log.info("Successfully saved {} air readings and {} soil readings", airReadings.size(), soilReadings.size());

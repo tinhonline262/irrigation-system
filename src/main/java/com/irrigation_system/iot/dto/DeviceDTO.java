@@ -9,10 +9,12 @@ public class DeviceDTO {
     private String name;
     private String userId;
     private String username;
+    private String ownerId;
     private String status;
     private String chipId;
     private Instant claimedAt;
     private Instant lastSeenAt;
+    private Boolean statusDelay;
     private Boolean autoWaterEnabled;
     private Float moistureThresholdLow;
     private Float moistureThresholdHigh;

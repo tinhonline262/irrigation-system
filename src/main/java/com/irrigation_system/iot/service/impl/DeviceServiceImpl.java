@@ -46,6 +46,7 @@ public class DeviceServiceImpl implements DeviceService {
         device.setUser(user);
         device.setName(createDeviceDTO.getName());
         device.setStatus("offline");
+        device.setStatusDelay(false);
         device.setAutoWaterEnabled(false);
         device.setCreatedAt(Instant.now());
 
@@ -99,18 +100,6 @@ public class DeviceServiceImpl implements DeviceService {
         return deviceMapper.mapToDTO(device);
     }
 
-    @Override
-    public void controlDevice(String id, String command) {
-        Device device = deviceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Device", "id", id));
-
-        deviceControlProducer.sendControlCommand(device.getId(), command);
-
-        auditLogService.logAction("CONTROL_DEVICE", device.getId(),
-                "{\"command\":\"" + command + "\"}");
-
-        log.info("Control command '{}' sent to device {} ({})", command, device.getName(), device.getId());
-    }
 
     private UserEntity getCurrentUserEntity() {
         String username = AuthenticationUtils.getCurrentUsername();
@@ -145,9 +134,9 @@ public class DeviceServiceImpl implements DeviceService {
         device.setUser(currentUser);
         device.setClaimedAt(java.time.Instant.now());
         device = deviceRepository.save(device);
-        
+
         auditLogService.logAction("CLAIM_DEVICE", device.getId(), "{\"chipId\":\"" + chipId + "\"}");
-        
+
         return deviceMapper.mapToDTO(device);
     }
 
@@ -165,7 +154,7 @@ public class DeviceServiceImpl implements DeviceService {
         device.setUser(null);
         device.setClaimedAt(null);
         deviceRepository.save(device);
-        
+
         auditLogService.logAction("UNCLAIM_DEVICE", device.getId(), "{}");
     }
 
@@ -207,4 +196,3 @@ public class DeviceServiceImpl implements DeviceService {
         return deviceMapper.mapToDTO(device);
     }
 }
-
