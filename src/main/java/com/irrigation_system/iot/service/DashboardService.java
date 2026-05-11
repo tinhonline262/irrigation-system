@@ -1,10 +1,6 @@
 package com.irrigation_system.iot.service;
 
-import com.irrigation_system.iot.dto.AirSensorHistoryDTO;
-import com.irrigation_system.iot.dto.AirSensorReadingDTO;
-import com.irrigation_system.iot.dto.SoilSensorHistoryDTO;
-import com.irrigation_system.iot.dto.SoilSensorReadingDTO;
-import com.irrigation_system.iot.dto.SoilSensorStatsDTO;
+import com.irrigation_system.iot.dto.*;
 import com.irrigation_system.iot.entity.AirSensorReading;
 import com.irrigation_system.iot.entity.Device;
 import com.irrigation_system.iot.entity.SoilSensorReading;
@@ -17,10 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -57,6 +50,7 @@ public class DashboardService {
         return DashboardSummaryDTO.builder()
                 .deviceId(deviceId)
                 .status(device.getStatus())
+                .statusDelay(device.getStatusDelay())
                 .latestSoilMoisturePercent(latestSoil.map(SoilSensorReading::getMoisturePercent).orElse(null))
                 .latestTemperatureCelsius(latestAir.map(AirSensorReading::getTemperatureCelsius).orElse(null))
                 .latestHumidityPercent(latestAir.map(AirSensorReading::getHumidityPercent).orElse(null))
@@ -117,7 +111,7 @@ public class DashboardService {
                             } else if (unit == ChronoUnit.DAYS) {
                                 dateTime = dateTime.toLocalDate().atStartOfDay();
                             }
-                            return dateTime.toInstant(ZoneId.systemDefault());
+                            return dateTime.atZone(ZoneId.systemDefault()).toInstant();
                         },
                         LinkedHashMap::new,
                         Collectors.mapping(SoilSensorReading::getMoisturePercent, Collectors.toList())
@@ -189,7 +183,7 @@ public class DashboardService {
                             } else if (unit == ChronoUnit.DAYS) {
                                 dateTime = dateTime.toLocalDate().atStartOfDay();
                             }
-                            return dateTime.toInstant(ZoneId.systemDefault());
+                            return dateTime.atZone(ZoneId.systemDefault()).toInstant();
                         },
                         LinkedHashMap::new,
                         Collectors.toList()

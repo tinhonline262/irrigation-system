@@ -15,6 +15,7 @@ import lombok.AccessLevel;
 public class DashboardSummaryDTO {
     String deviceId;
     String status;
+    Boolean statusDelay;
     Float latestSoilMoisturePercent;
     Float latestTemperatureCelsius;
     Float latestHumidityPercent;

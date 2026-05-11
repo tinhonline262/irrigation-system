@@ -77,5 +77,21 @@ public class AdminDeviceController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/{id}/control")
+    @PreAuthorize("hasAuthority('DEVICE_UPDATE')")
+    public ResponseEntity<ApiResponse<Void>> controlDevice(
+            @PathVariable String id,
+            @Valid @RequestBody DeviceControlDTO request) {
+        
+        deviceService.controlDevice(id, request.getCommand());
+
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .status(HttpStatus.OK.value())
+                .message("Device control command sent successfully")
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
 }
 

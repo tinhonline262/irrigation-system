@@ -1,18 +1,20 @@
 package com.irrigation_system.iot.controller;
 
 import com.irrigation_system.iot.dto.ApiResponse;
+import com.irrigation_system.iot.dto.DeviceControlDTO;
 import com.irrigation_system.iot.dto.StopWateringRequest;
 import com.irrigation_system.iot.dto.WateringLogDTO;
 import com.irrigation_system.iot.dto.WateringLogPageDTO;
 import com.irrigation_system.iot.dto.WateringLogStatsDTO;
 import com.irrigation_system.iot.dto.WateringStatusDTO;
+import com.irrigation_system.iot.queue.producer.DeviceControlProducer;
 import com.irrigation_system.iot.service.WateringService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.StreamingResponseBody;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,16 +23,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/api/devices")
+@RequestMapping("/api/v1/devices")
 @RequiredArgsConstructor
 public class WateringController {
 
     private final WateringService wateringService;
+    private final DeviceControlProducer deviceControlProducer;
 
     @PostMapping("/{deviceId}/water/start")
     public ResponseEntity<ApiResponse<WateringLogDTO>> startManualWatering(@PathVariable String deviceId) {
         WateringLogDTO wateringLog = wateringService.startManualWatering(deviceId);
+        deviceControlProducer.sendControlCommand(deviceId, "ON");
         return ResponseEntity.ok(ApiResponse.success(200, "Manual watering started", wateringLog));
     }
 
@@ -39,7 +45,16 @@ public class WateringController {
             @PathVariable String deviceId,
             @Valid @RequestBody StopWateringRequest request) {
         WateringLogDTO wateringLog = wateringService.stopManualWatering(deviceId, request.getWaterAmountMl());
+        deviceControlProducer.sendControlCommand(deviceId, "OFF");
         return ResponseEntity.ok(ApiResponse.success(200, "Manual watering stopped", wateringLog));
+    }
+
+    @PostMapping("/{deviceId}/control")
+    public ResponseEntity<ApiResponse<Void>> controlDevice(
+            @PathVariable String deviceId,
+            @Valid @RequestBody DeviceControlDTO request) {
+        deviceControlProducer.sendControlCommand(deviceId, request.getCommand());
+        return ResponseEntity.ok(ApiResponse.success(200, "Device control command sent", null));
     }
 
     @GetMapping("/{deviceId}/water/status")
@@ -63,7 +78,7 @@ public class WateringController {
         String filename = String.format("watering-logs-%s.csv", deviceId);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                .contentType(MediaType.valueOf("text/csv"))
+                .header(HttpHeaders.CONTENT_TYPE, "text/csv; charset=UTF-8")
                 .body(responseBody);
     }
 

@@ -158,6 +158,8 @@ public class WateringService {
         try (Stream<WateringLog> wateringLogs = wateringLogRepository.findByDevice_IdOrderByStartedAtDesc(deviceId);
              BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8))) {
 
+            // UTF-8 BOM — required for Excel to correctly open Vietnamese/special characters
+            writer.write('\uFEFF');
             writer.write("id,deviceId,triggeredBy,triggerType,startedAt,endedAt,waterAmountMl");
             writer.newLine();
 

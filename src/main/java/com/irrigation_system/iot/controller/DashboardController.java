@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Controller;
 public class DashboardController {
 
     private final DashboardService dashboardService;
-    private final SimpMessagingTemplate messagingTemplate;
 
     // WebSocket endpoint for realtime dashboard subscription
     @MessageMapping("/dashboard/{deviceId}")

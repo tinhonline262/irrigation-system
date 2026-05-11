@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -28,7 +29,8 @@ public interface WateringLogRepository extends JpaRepository<WateringLog, String
 
     Optional<WateringLog> findFirstByDevice_IdAndEndedAtIsNullOrderByStartedAtDesc(String deviceId);
 
-    Stream<WateringLog> findByDevice_IdOrderByStartedAtDesc(String deviceId);
+    @Query("SELECT w FROM WateringLog w LEFT JOIN FETCH w.device LEFT JOIN FETCH w.triggeredBy WHERE w.device.id = :deviceId ORDER BY w.startedAt DESC")
+    Stream<WateringLog> findByDevice_IdOrderByStartedAtDesc(@Param("deviceId") String deviceId);
 
     Page<WateringLog> findByDevice_IdOrderByStartedAtDesc(String deviceId, Pageable pageable);
 }
