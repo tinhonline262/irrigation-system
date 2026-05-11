@@ -4,12 +4,10 @@ import com.irrigation_system.iot.filter.JwtBlacklistFilter;
 import com.irrigation_system.iot.handler.CustomAccessDeniedHandler;
 import com.irrigation_system.iot.handler.CustomAuthenticationEntryPoint;
 import com.irrigation_system.iot.handler.CustomAuthenticationFailureHandler;
-import com.irrigation_system.iot.handler.OAuth2LoginSuccessHandler;
 import com.irrigation_system.iot.properties.JwtProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import jakarta.servlet.DispatcherType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -42,7 +40,6 @@ import java.util.Optional;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
@@ -65,8 +62,6 @@ public class SecurityConfig {
                                 "/", "/api/v1/auth/**",
                                 "/api/v1/sensors/data",
                                 "/actuator/**",
-                                "/oauth2/**",
-                                "/login/oauth2/code/google",
                                 "/api/debug/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**", "/v3/api-docs",
@@ -87,8 +82,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler)
                         .jwt(jwtConfigurer -> jwtConfigurer.decoder(customJwtDecoder())
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter())))
-                .httpBasic(Customizer.withDefaults());
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter())));
         return http.build();
     }
 
