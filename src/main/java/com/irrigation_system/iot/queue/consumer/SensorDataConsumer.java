@@ -99,7 +99,7 @@ public class SensorDataConsumer {
         }
 
         for (String deviceId : updatedDeviceIds) {
-            DashboardSummaryDTO summary = dashboardService.getDashboardSummary(deviceId);
+            DashboardSummaryDTO summary = dashboardService.getDashboardSummaryInternal(deviceId);
             messagingTemplate.convertAndSend("/topic/dashboard/" + deviceId, summary);
         }
 
