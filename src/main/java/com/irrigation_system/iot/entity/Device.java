@@ -42,11 +42,17 @@ public class Device {
     @Column(name = "last_modified_by")
     private String lastModifiedBy;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private UserEntity user;
+
+    @Size(max = 50)
+    @Column(name = "chip_id", unique = true)
+    private String chipId;
+
+    @Column(name = "claimed_at")
+    private Instant claimedAt;
 
     @Size(max = 255)
     @NotNull

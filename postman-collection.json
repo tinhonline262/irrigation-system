@@ -1,535 +1,595 @@
 {
-    "info": {
-        "_postman_id": "irrigation-sensor-api",
-        "name": "Irrigation System - Sensor API",
-        "description": "Test collection for sensor data POST API with random mock data generation",
-        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  "info": {
+    "name": "Irrigation System API",
+    "_postman_id": "irrigation-system-collection",
+    "description": "Complete API collection for the IoT Irrigation System backend.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",      "value": "http://localhost:8080",  "type": "string" },
+    { "key": "accessToken",  "value": "",                       "type": "string" },
+    { "key": "refreshToken", "value": "",                       "type": "string" },
+    { "key": "deviceId",     "value": "",                       "type": "string" },
+    { "key": "chipId",       "value": "",                       "type": "string" },
+    { "key": "userId",       "value": "",                       "type": "string" },
+    { "key": "roleId",       "value": "",                       "type": "string" },
+    { "key": "permissionId", "value": "",                       "type": "string" },
+    { "key": "username",     "value": "",                       "type": "string" },
+    { "key": "notificationId","value": "",                      "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data) {",
+                  "  pm.collectionVariables.set('accessToken',  json.data.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', json.data.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","login"] }
+          }
+        },
+        {
+          "name": "Sign Up",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"newuser\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"New\",\n  \"lastName\": \"User\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/sign-up", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","sign-up"] }
+          }
+        },
+        {
+          "name": "Verify User",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/verification/:token",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","auth","verification",":token"],
+              "variable": [{ "key": "token", "value": "<verification_token>" }]
+            }
+          }
+        },
+        {
+          "name": "Refresh User Verification Email",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh-user-verification?username={{username}}",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","auth","refresh-user-verification"],
+              "query": [{ "key": "username", "value": "{{username}}" }]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data) {",
+                  "  pm.collectionVariables.set('accessToken',  json.data.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', json.data.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh-token/:refreshToken",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","auth","refresh-token",":refreshToken"],
+              "variable": [{ "key": "refreshToken", "value": "{{refreshToken}}" }]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/logout", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","logout"] }
+          }
+        }
+      ]
     },
-    "item": [
+    {
+      "name": "User (Profile)",
+      "item": [
         {
-            "name": "Single Sensor Data Post",
-            "event": [
-                {
-                    "listen": "prerequest",
-                    "script": {
-                        "exec": [
-                            "// Generate random sensor data",
-                            "const deviceIds = ['device-01', 'device-02', 'device-03', 'device-04', 'device-05', 'greenhouse-A', 'greenhouse-B', 'field-1'];",
-                            "const randomDeviceId = deviceIds[Math.floor(Math.random() * deviceIds.length)];",
-                            "const temperature = (Math.random() * 35 + 5).toFixed(2); // 5\u00b0C to 40\u00b0C",
-                            "const humidity = (Math.random() * 100).toFixed(2); // 0-100%",
-                            "const soilMoisture = (Math.random() * 100).toFixed(2); // 0-100%",
-                            "const timestamp = new Date().toISOString();",
-                            "",
-                            "// Set as environment variables",
-                            "pm.environment.set('device_id', randomDeviceId);",
-                            "pm.environment.set('temperature', temperature);",
-                            "pm.environment.set('humidity', humidity);",
-                            "pm.environment.set('soil_moisture', soilMoisture);",
-                            "pm.environment.set('timestamp', timestamp);",
-                            "",
-                            "console.log(`Generated: Device=${randomDeviceId}, Temp=${temperature}\u00b0C, Humidity=${humidity}%, Soil=${soilMoisture}%`);"
-                        ],
-                        "type": "text/javascript"
-                    }
-                },
-                {
-                    "listen": "test",
-                    "script": {
-                        "exec": [
-                            "pm.test('Response status is 202 Accepted', function () {",
-                            "    pm.response.to.have.status(202);",
-                            "});",
-                            "",
-                            "pm.test('Response time is less than 500ms', function () {",
-                            "    pm.expect(pm.response.responseTime).to.be.below(500);",
-                            "});"
-                        ],
-                        "type": "text/javascript"
-                    }
-                }
-            ],
-            "request": {
-                "method": "POST",
-                "header": [
-                    {
-                        "key": "Content-Type",
-                        "value": "application/json"
-                    }
-                ],
-                "body": {
-                    "mode": "raw",
-                    "raw": "{\n  \"deviceId\": \"{{device_id}}\",\n  \"temperature\": {{temperature}},\n  \"humidity\": {{humidity}},\n  \"soilMoisture\": {{soil_moisture}},\n  \"timestamp\": \"{{timestamp}}\"\n}"
-                },
-                "url": {
-                    "raw": "{{base_url}}/api/v1/sensors/data",
-                    "host": [
-                        "{{base_url}}"
-                    ],
-                    "path": [
-                        "api",
-                        "v1",
-                        "sensors",
-                        "data"
-                    ]
-                }
+          "name": "Get Profile by Username",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/:username",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","users",":username"],
+              "variable": [{ "key": "username", "value": "{{username}}" }]
             }
+          }
         },
         {
-            "name": "Batch Test - 10 Requests",
-            "event": [
-                {
-                    "listen": "prerequest",
-                    "script": {
-                        "exec": [
-                            "// This will be run before each iteration in the runner"
-                        ],
-                        "type": "text/javascript"
-                    }
-                }
-            ],
-            "request": {
-                "method": "POST",
-                "header": [
-                    {
-                        "key": "Content-Type",
-                        "value": "application/json"
-                    }
-                ],
-                "body": {
-                    "mode": "raw",
-                    "raw": "{\n  \"deviceId\": \"{{device_id}}\",\n  \"temperature\": {{temperature}},\n  \"humidity\": {{humidity}},\n  \"soilMoisture\": {{soil_moisture}},\n  \"timestamp\": \"{{timestamp}}\"\n}"
-                },
-                "url": {
-                    "raw": "{{base_url}}/api/v1/sensors/data",
-                    "host": [
-                        "{{base_url}}"
-                    ],
-                    "path": [
-                        "api",
-                        "v1",
-                        "sensors",
-                        "data"
-                    ]
-                }
+          "name": "Delete User (by username)",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/:username",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","users",":username"],
+              "variable": [{ "key": "username", "value": "{{username}}" }]
             }
-        },
-        {
-            "name": "Admin Login",
-            "event": [
-                {
-                    "listen": "test",
-                    "script": {
-                        "exec": [
-                            "if (pm.response.code === 200) {",
-                            "    const responseData = pm.response.json();",
-                            "    if (responseData.data && responseData.data.token) {",
-                            "        pm.environment.set('jwt_token', responseData.data.token);",
-                            "        console.log('JWT Token set!');",
-                            "    }",
-                            "}"
-                        ],
-                        "type": "text/javascript"
-                    }
-                }
-            ],
-            "request": {
-                "method": "POST",
-                "header": [
-                    {
-                        "key": "Content-Type",
-                        "value": "application/json"
-                    }
-                ],
-                "body": {
-                    "mode": "raw",
-                    "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
-                },
-                "url": {
-                    "raw": "{{base_url}}/api/v1/auth/login",
-                    "host": [
-                        "{{base_url}}"
-                    ],
-                    "path": [
-                        "api",
-                        "v1",
-                        "auth",
-                        "login"
-                    ]
-                }
-            }
-        },
-        {
-            "name": "Create Admin Device",
-            "request": {
-                "method": "POST",
-                "header": [
-                    {
-                        "key": "Content-Type",
-                        "value": "application/json"
-                    },
-                    {
-                        "key": "Authorization",
-                        "value": "Bearer {{jwt_token}}"
-                    }
-                ],
-                "body": {
-                    "mode": "raw",
-                    "raw": "{\n  \"userId\": \"{{admin_user_id}}\",\n  \"name\": \"Test Admin Device 1\"\n}"
-                },
-                "url": {
-                    "raw": "{{base_url}}/api/v1/admin/devices",
-                    "host": [
-                        "{{base_url}}"
-                    ],
-                    "path": [
-                        "api",
-                        "v1",
-                        "admin",
-                        "devices"
-                    ]
-                }
-            }
-        },
-        {
-            "name": "Admin Options",
-            "item": [
-                {
-                    "name": "Get Users",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{access_token}}",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/v1/admin/users?page=0&size=10",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "v1",
-                                "admin",
-                                "users"
-                            ],
-                            "query": [
-                                {
-                                    "key": "page",
-                                    "value": "0"
-                                },
-                                {
-                                    "key": "size",
-                                    "value": "10"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Update User Roles",
-                    "request": {
-                        "method": "PATCH",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{access_token}}",
-                                "type": "text"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"roles\": [\"ADMIN\", \"USER\"]\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/api/v1/admin/users/{{userId}}/roles",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "v1",
-                                "admin",
-                                "users",
-                                "{{userId}}",
-                                "roles"
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Get Roles",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{access_token}}",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/v1/admin/roles?page=0&size=10",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "v1",
-                                "admin",
-                                "roles"
-                            ],
-                            "query": [
-                                {
-                                    "key": "page",
-                                    "value": "0"
-                                },
-                                {
-                                    "key": "size",
-                                    "value": "10"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Create Role",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{access_token}}",
-                                "type": "text"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"name\": \"MANAGER\",\n    \"permissions\": [\"DEVICE_READ_ALL\"]\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/api/v1/admin/roles",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "v1",
-                                "admin",
-                                "roles"
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Update Role Permissions",
-                    "request": {
-                        "method": "PATCH",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{access_token}}",
-                                "type": "text"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"permissions\": [\"DEVICE_READ_ALL\", \"USER_READ_ALL\"]\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/api/v1/admin/roles/{{roleId}}/permissions",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "v1",
-                                "admin",
-                                "roles",
-                                "{{roleId}}",
-                                "permissions"
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Get All Devices",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{access_token}}",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/v1/admin/devices?page=0&size=10",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "v1",
-                                "admin",
-                                "devices"
-                            ],
-                            "query": [
-                                {
-                                    "key": "page",
-                                    "value": "0"
-                                },
-                                {
-                                    "key": "size",
-                                    "value": "10"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Delete Device",
-                    "request": {
-                        "method": "DELETE",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{access_token}}",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/v1/admin/devices/{{deviceId}}",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "v1",
-                                "admin",
-                                "devices",
-                                "{{deviceId}}"
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Calibrate Device",
-                    "request": {
-                        "method": "PUT",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{access_token}}",
-                                "type": "text"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"soilMoistureOffset\": 0.5,\n    \"airTemperatureOffset\": -1.2,\n    \"airHumidityOffset\": 0.0\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/api/v1/admin/devices/{{deviceId}}/calibrate",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "v1",
-                                "admin",
-                                "devices",
-                                "{{deviceId}}",
-                                "calibrate"
-                            ]
-                        }
-                    }
-                }
-            ]
+          }
         }
-    ],
-    "variable": [
+      ]
+    },
+    {
+      "name": "My Devices",
+      "item": [
         {
-            "key": "base_url",
-            "value": "http://localhost:8080",
-            "type": "string"
+          "name": "Get My Devices",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/my/devices", "host": ["{{baseUrl}}"], "path": ["api","v1","my","devices"] }
+          }
         },
         {
-            "key": "device_id",
-            "value": "device-01",
-            "type": "string"
+          "name": "Get My Device Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/my/devices/:deviceId",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","my","devices",":deviceId"],
+              "variable": [{ "key": "deviceId", "value": "{{deviceId}}" }]
+            }
+          }
         },
         {
-            "key": "temperature",
-            "value": "25.5",
-            "type": "string"
+          "name": "Claim Device",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"chipId\": \"{{chipId}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/my/devices/claim", "host": ["{{baseUrl}}"], "path": ["api","v1","my","devices","claim"] }
+          }
         },
         {
-            "key": "humidity",
-            "value": "60.0",
-            "type": "string"
+          "name": "Unclaim Device",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/my/devices/:deviceId/unclaim",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","my","devices",":deviceId","unclaim"],
+              "variable": [{ "key": "deviceId", "value": "{{deviceId}}" }]
+            }
+          }
         },
         {
-            "key": "soil_moisture",
-            "value": "45.0",
-            "type": "string"
-        },
-        {
-            "key": "timestamp",
-            "value": "2026-05-07T10:00:00Z",
-            "type": "string"
-        },
-        {
-            "key": "jwt_token",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "admin_user_id",
-            "value": "user-admin-uuid",
-            "type": "string"
+          "name": "Update Device Name",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Garden Device\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/my/devices/:deviceId/name",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","my","devices",":deviceId","name"],
+              "variable": [{ "key": "deviceId", "value": "{{deviceId}}" }]
+            }
+          }
         }
-    ]
+      ]
+    },
+    {
+      "name": "Device Config",
+      "item": [
+        {
+          "name": "Get Device Config",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/my/devices/:deviceId/config",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","my","devices",":deviceId","config"],
+              "variable": [{ "key": "deviceId", "value": "{{deviceId}}" }]
+            }
+          }
+        },
+        {
+          "name": "Update Device Config",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"autoWaterEnabled\": true,\n  \"moistureThresholdLow\": 30.0,\n  \"moistureThresholdHigh\": 70.0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/my/devices/:deviceId/config",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","my","devices",":deviceId","config"],
+              "variable": [{ "key": "deviceId", "value": "{{deviceId}}" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notifications?page=0&size=10",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","notifications"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Unread Count",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/notifications/unread-count", "host": ["{{baseUrl}}"], "path": ["api","v1","notifications","unread-count"] }
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notifications/:id/read",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","notifications",":id","read"],
+              "variable": [{ "key": "id", "value": "{{notificationId}}" }]
+            }
+          }
+        },
+        {
+          "name": "Mark All Notifications as Read",
+          "request": {
+            "method": "PATCH",
+            "url": { "raw": "{{baseUrl}}/api/v1/notifications/read-all", "host": ["{{baseUrl}}"], "path": ["api","v1","notifications","read-all"] }
+          }
+        },
+        {
+          "name": "Delete Notification",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notifications/:id",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","notifications",":id"],
+              "variable": [{ "key": "id", "value": "{{notificationId}}" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/dashboard", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","dashboard"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Devices",
+      "item": [
+        {
+          "name": "Get All Devices",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/devices?page=0&size=10",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","admin","devices"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Device Detail (Admin)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/devices/:id",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","admin","devices",":id"],
+              "variable": [{ "key": "id", "value": "{{deviceId}}" }]
+            }
+          }
+        },
+        {
+          "name": "Calibrate Device",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"soilMoistureOffset\": 0.5,\n  \"airTemperatureOffset\": -0.2,\n  \"airHumidityOffset\": 1.0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/devices/:id/calibrate",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","admin","devices",":id","calibrate"],
+              "variable": [{ "key": "id", "value": "{{deviceId}}" }]
+            }
+          }
+        },
+        {
+          "name": "Delete Device",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/devices/:id",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","admin","devices",":id"],
+              "variable": [{ "key": "id", "value": "{{deviceId}}" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users?page=0&size=10",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","admin","users"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update User Roles",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roles\": [\"USER\", \"ADMIN\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users/:id/roles",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","admin","users",":id","roles"],
+              "variable": [{ "key": "id", "value": "{{userId}}" }]
+            }
+          }
+        },
+        {
+          "name": "Reset User Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newPassword\": \"NewPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users/:id/reset-password",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","admin","users",":id","reset-password"],
+              "variable": [{ "key": "id", "value": "{{userId}}" }]
+            }
+          }
+        },
+        {
+          "name": "Soft Delete User",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users/:id",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","admin","users",":id"],
+              "variable": [{ "key": "id", "value": "{{userId}}" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Roles & Permissions",
+      "item": [
+        {
+          "name": "Get All Roles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/roles?page=0&size=10",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","admin","roles"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Role",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"OPERATOR\",\n  \"description\": \"Device operator role\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/roles", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","roles"] }
+          }
+        },
+        {
+          "name": "Update Role Permissions",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissions\": [\"DEVICE_READ_ALL\", \"DEVICE_CONFIG_READ\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/roles/:id/permissions",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","admin","roles",":id","permissions"],
+              "variable": [{ "key": "id", "value": "{{roleId}}" }]
+            }
+          }
+        },
+        {
+          "name": "Get All Permissions",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/roles/permissions?page=0&size=50",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","admin","roles","permissions"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "50" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Permission",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"DEVICE_EXPORT\",\n  \"description\": \"Permission to export device data\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/roles/permissions", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","roles","permissions"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - System Config",
+      "item": [
+        {
+          "name": "Get All Configs",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/admin/config", "host": ["{{baseUrl}}"], "path": ["api","admin","config"] }
+          }
+        },
+        {
+          "name": "Update Retention",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"value\": \"90\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/admin/config/retention", "host": ["{{baseUrl}}"], "path": ["api","admin","config","retention"] }
+          }
+        },
+        {
+          "name": "Update Sample Rate",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"value\": \"60\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/admin/config/sample-rate", "host": ["{{baseUrl}}"], "path": ["api","admin","config","sample-rate"] }
+          }
+        },
+        {
+          "name": "Update Timezone",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"value\": \"Asia/Ho_Chi_Minh\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/admin/config/timezone", "host": ["{{baseUrl}}"], "path": ["api","admin","config","timezone"] }
+          }
+        },
+        {
+          "name": "Download Config Backup",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/admin/config/backup", "host": ["{{baseUrl}}"], "path": ["api","admin","config","backup"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Audit Logs",
+      "item": [
+        {
+          "name": "Get Audit Logs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/audit-log?page=0&size=20",
+              "host": ["{{baseUrl}}"], "path": ["api","admin","audit-log"],
+              "query": [
+                { "key": "page",   "value": "0" },
+                { "key": "size",   "value": "20" },
+                { "key": "userId", "value": "",   "disabled": true },
+                { "key": "from",   "value": "",   "disabled": true, "description": "ISO datetime e.g. 2025-01-01T00:00:00" },
+                { "key": "to",     "value": "",   "disabled": true, "description": "ISO datetime e.g. 2025-12-31T23:59:59" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
 }
