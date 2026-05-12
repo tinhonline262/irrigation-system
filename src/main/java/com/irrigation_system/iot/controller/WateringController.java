@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/devices")
+@RequestMapping("/api/v1/my/devices")
 @RequiredArgsConstructor
 public class WateringController {
 
@@ -53,6 +53,7 @@ public class WateringController {
     public ResponseEntity<ApiResponse<Void>> controlDevice(
             @PathVariable String deviceId,
             @Valid @RequestBody DeviceControlDTO request) {
+        wateringService.verifyDeviceOwnership(deviceId);
         deviceControlProducer.sendControlCommand(deviceId, request.getCommand());
         return ResponseEntity.ok(ApiResponse.success(200, "Device control command sent", null));
     }

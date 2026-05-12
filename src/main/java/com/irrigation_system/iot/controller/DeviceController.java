@@ -3,6 +3,7 @@ package com.irrigation_system.iot.controller;
 import com.irrigation_system.iot.dto.AirSensorHistoryDTO;
 import com.irrigation_system.iot.dto.AirSensorReadingDTO;
 import com.irrigation_system.iot.dto.ApiResponse;
+import com.irrigation_system.iot.dto.DashboardSummaryDTO;
 import com.irrigation_system.iot.dto.SoilSensorHistoryDTO;
 import com.irrigation_system.iot.dto.SoilSensorReadingDTO;
 import com.irrigation_system.iot.dto.SoilSensorStatsDTO;
@@ -19,7 +20,7 @@ import java.time.Instant;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/devices")
+@RequestMapping("/api/v1/my/devices")
 @RequiredArgsConstructor
 public class DeviceController {
 
