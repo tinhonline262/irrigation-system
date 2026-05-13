@@ -84,8 +84,12 @@ public class DashboardServiceImpl implements DashboardService {
         UserEntity currentUser = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        if (device.getOwnerId() == null || !device.getOwnerId().equals(currentUser.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not own this device");
+        if (device.getOwnerId() == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This device does not have an owner assigned (owner_id is null)");
+        }
+        
+        if (!device.getOwnerId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not own this device. Owner ID does not match your User ID.");
         }
 
         return device;
