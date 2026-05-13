@@ -98,7 +98,7 @@ jobs:
             MAIL_SENDER_FROM=$MAIL_SENDER_FROM
             EOF
 
-            sudo docker compose down -v || true
+            sudo docker compose down || true
             sudo docker compose up -d
             
             # Remove .env for security after deploying
