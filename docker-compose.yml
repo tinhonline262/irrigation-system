@@ -70,10 +70,45 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      loki:
+        condition: service_started
+    restart: unless-stopped
+    volumes:
+      - app_logs:/logs
+
+  loki:
+    image: grafana/loki:3.1.0
+    container_name: irrigation-system-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/loki-config.yml
+    volumes:
+      - loki_data:/loki
+      - ./loki-config.yml:/etc/loki/loki-config.yml:ro
+    networks:
+      - irrigation-network
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:3.1.0
+    container_name: irrigation-system-promtail
+    command: -config.file=/etc/promtail/promtail-config.yml -config.expand-env=true
+    volumes:
+      - app_logs:/logs:ro
+      - ./promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+      - promtail_positions:/tmp
+    networks:
+      - irrigation-network
+    depends_on:
+      loki:
+        condition: service_started
     restart: unless-stopped
 
 volumes:
   mysql_irrigation_data:
+  app_logs:
+  loki_data:
+  promtail_positions:
 
 networks:
   irrigation-network:
