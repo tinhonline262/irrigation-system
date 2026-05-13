@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Use Spring Boot's defaults for console output and standard log variables -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Read properties from application.yml -->
+    <springProperty scope="context" name="springAppName" source="spring.application.name" defaultValue="application"/>
+    <springProperty scope="context" name="appEnv" source="app.env" defaultValue="local"/>
+    <springProperty scope="context" name="logPath" source="logging.file.path" defaultValue="logs"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- Log file will be placed in $LOG_PATH -->
+        <file>${logPath}/app.log</file>
+        
+        <!-- Rotate logs daily -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logPath}/app.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- Keep 30 days of history -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
+        <!-- Logstash Encoder for JSON format -->
+        <!-- Fields like timestamp, level, logger, thread, message, stack_trace, and MDC are included by default -->
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <!-- Include custom fields app and env -->
+            <customFields>{"app":"${springAppName}","env":"${appEnv}"}</customFields>
+        </encoder>
+    </appender>
+
+    <!-- Dev profile uses both CONSOLE and FILE -->
+    <springProfile name="dev, default">
+        <root>
+            <appender-ref ref="CONSOLE" />
+            <appender-ref ref="FILE" />
+        </root>
+    </springProfile>
+
+    <!-- Other profiles use only FILE -->
+    <springProfile name="!dev &amp; !default">
+        <root>
+            <appender-ref ref="FILE" />
+        </root>
+    </springProfile>
+
+</configuration>
