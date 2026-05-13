@@ -7,6 +7,7 @@ import com.irrigation_system.iot.dto.WateringLogDTO;
 import com.irrigation_system.iot.dto.WateringLogPageDTO;
 import com.irrigation_system.iot.dto.WateringLogStatsDTO;
 import com.irrigation_system.iot.dto.WateringStatusDTO;
+import com.irrigation_system.iot.entity.Device;
 import com.irrigation_system.iot.queue.producer.DeviceControlProducer;
 import com.irrigation_system.iot.service.WateringService;
 import jakarta.validation.Valid;
@@ -36,7 +37,8 @@ public class WateringController {
     @PostMapping("/{deviceId}/water/start")
     public ResponseEntity<ApiResponse<WateringLogDTO>> startManualWatering(@PathVariable String deviceId) {
         WateringLogDTO wateringLog = wateringService.startManualWatering(deviceId);
-        deviceControlProducer.sendControlCommand(deviceId, "ON");
+        Device device = wateringService.verifyDeviceOwnership(deviceId).device;
+        deviceControlProducer.sendControlCommand(device.getChipId(), "ON");
         return ResponseEntity.ok(ApiResponse.success(200, "Manual watering started", wateringLog));
     }
 
@@ -45,7 +47,8 @@ public class WateringController {
             @PathVariable String deviceId,
             @Valid @RequestBody StopWateringRequest request) {
         WateringLogDTO wateringLog = wateringService.stopManualWatering(deviceId, request.getWaterAmountMl());
-        deviceControlProducer.sendControlCommand(deviceId, "OFF");
+        Device device = wateringService.verifyDeviceOwnership(deviceId).device;
+        deviceControlProducer.sendControlCommand(device.getChipId(), "OFF");
         return ResponseEntity.ok(ApiResponse.success(200, "Manual watering stopped", wateringLog));
     }
 
@@ -53,8 +56,8 @@ public class WateringController {
     public ResponseEntity<ApiResponse<Void>> controlDevice(
             @PathVariable String deviceId,
             @Valid @RequestBody DeviceControlDTO request) {
-        wateringService.verifyDeviceOwnership(deviceId);
-        deviceControlProducer.sendControlCommand(deviceId, request.getCommand());
+        Device device = wateringService.verifyDeviceOwnership(deviceId).device;
+        deviceControlProducer.sendControlCommand(device.getChipId(), request.getCommand());
         return ResponseEntity.ok(ApiResponse.success(200, "Device control command sent", null));
     }
 

@@ -18,10 +18,10 @@ public class DeviceControlProducer {
 
     /**
      * Publishes a control command (ON/OFF) to the device via MQTT topic exchange.
-     * The ESP8266 subscribes to "device.control.{deviceId}" and expects plain text "ON" or "OFF".
+     * The ESP8266 subscribes to "device.control.{chipId}" and expects plain text "ON" or "OFF".
      */
-    public void sendControlCommand(String deviceId, String command) {
-        String routingKey = "device.control." + deviceId;
+    public void sendControlCommand(String chipId, String command) {
+        String routingKey = "device.control." + chipId;
 
         // Send as plain text (not JSON) because the ESP8266 expects raw "ON" or "OFF"
         MessageProperties props = new MessageProperties();
@@ -30,6 +30,6 @@ public class DeviceControlProducer {
 
         rabbitTemplate.send(MQTT_EXCHANGE, routingKey, message);
 
-        log.info("Sent control command '{}' to device {} on topic '{}'", command, deviceId, routingKey);
+        log.info("Sent control command '{}' to chipId {} on topic '{}'", command, chipId, routingKey);
     }
 }
