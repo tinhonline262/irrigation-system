@@ -132,6 +132,7 @@ public class DeviceServiceImpl implements DeviceService {
         }
 
         device.setUser(currentUser);
+        device.setOwnerId(currentUser.getId());
         device.setClaimedAt(java.time.Instant.now());
         device = deviceRepository.save(device);
 
