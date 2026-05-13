@@ -58,7 +58,12 @@ public class DeviceMqttConsumer {
         log.info("Received status update {} for chipId: {}", message.getStatus(), message.getChipId());
         if (message.getChipId() != null) {
             deviceRepository.findByChipId(message.getChipId()).ifPresent(device -> {
-                device.setStatus(message.getStatus());
+                if (message.getStatus() != null) device.setStatus(message.getStatus());
+                if (message.getRelay() != null) device.setStatusRelay(message.getRelay());
+                if (message.getWifiRssi() != null) device.setWifiRssi(message.getWifiRssi());
+                if (message.getIp() != null) device.setIp(message.getIp());
+                if (message.getFreeHeap() != null) device.setFreeHeap(message.getFreeHeap());
+                if (message.getUptime() != null) device.setUptime(message.getUptime());
                 device.setLastSeenAt(Instant.now());
                 deviceRepository.save(device);
             });

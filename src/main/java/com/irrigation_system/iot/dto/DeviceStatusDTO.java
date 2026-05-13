@@ -6,4 +6,9 @@ import lombok.Data;
 public class DeviceStatusDTO {
     private String chipId;
     private String status;
+    private Boolean relay;
+    private Integer wifiRssi;
+    private String ip;
+    private Long freeHeap;
+    private Long uptime;
 }

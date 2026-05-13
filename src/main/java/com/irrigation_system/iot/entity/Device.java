@@ -70,8 +70,8 @@ public class Device {
 
     @NotNull
     @ColumnDefault("0")
-    @Column(name = "status_delay", nullable = false)
-    private Boolean statusDelay = false;
+    @Column(name = "status_relay", nullable = false)
+    private Boolean statusRelay = false;
 
     @Column(name = "moisture_threshold_low")
     private Float moistureThresholdLow;
@@ -98,5 +98,17 @@ public class Device {
     @ColumnDefault("0.0")
     @Column(name = "air_humidity_offset")
     private Float airHumidityOffset = 0.0f;
+
+    @Column(name = "wifi_rssi")
+    private Integer wifiRssi;
+
+    @Column(name = "ip")
+    private String ip;
+
+    @Column(name = "free_heap")
+    private Long freeHeap;
+
+    @Column(name = "uptime")
+    private Long uptime;
 
 }
