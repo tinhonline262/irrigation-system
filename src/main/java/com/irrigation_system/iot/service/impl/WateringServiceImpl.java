@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class WateringServiceImpl implements WateringService {
 
     private final DeviceRepository deviceRepository;
@@ -57,8 +58,12 @@ public class WateringServiceImpl implements WateringService {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Authenticated user not found"));
 
+        if (device.getOwnerId() == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This device does not have an owner assigned (owner_id is null)");
+        }
+
         if (!user.getId().equals(device.getOwnerId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to access this device");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to access this device. Owner ID does not match your User ID.");
         }
 
         return new DeviceAndUser(device, user);
@@ -81,8 +86,8 @@ public class WateringServiceImpl implements WateringService {
 
         return WateringLogDTO.builder()
                 .id(savedLog.getId())
-                .deviceId(savedLog.getDevice().getId())
-                .triggeredBy(savedLog.getTriggeredBy().getUsername())
+                .deviceId(device.getId())
+                .triggeredBy(user.getUsername())
                 .triggerType(savedLog.getTriggerType())
                 .startedAt(savedLog.getStartedAt())
                 .endedAt(savedLog.getEndedAt())
