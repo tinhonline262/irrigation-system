@@ -74,7 +74,7 @@ services:
         condition: service_started
     restart: unless-stopped
     volumes:
-      - app_logs:/logs
+      - app_logs:/app/logs
 
   loki:
     image: grafana/loki:3.1.0
@@ -94,7 +94,7 @@ services:
     container_name: irrigation-system-promtail
     command: -config.file=/etc/promtail/promtail-config.yml -config.expand-env=true
     volumes:
-      - app_logs:/logs:ro
+      - app_logs:/app/logs:ro
       - ./promtail-config.yml:/etc/promtail/promtail-config.yml:ro
       - promtail_positions:/tmp
     networks:
