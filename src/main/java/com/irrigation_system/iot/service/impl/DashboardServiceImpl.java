@@ -62,7 +62,7 @@ public class DashboardServiceImpl implements DashboardService {
         return DashboardSummaryDTO.builder()
                 .deviceId(deviceId)
                 .status(device.getStatus())
-                .statusDelay(device.getStatusDelay())
+                .statusRelay(device.getStatusRelay())
                 .latestSoilMoisturePercent(latestSoil.map(SoilSensorReading::getMoisturePercent).orElse(null))
                 .latestTemperatureCelsius(latestAir.map(AirSensorReading::getTemperatureCelsius).orElse(null))
                 .latestHumidityPercent(latestAir.map(AirSensorReading::getHumidityPercent).orElse(null))
