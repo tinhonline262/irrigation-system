@@ -9,5 +9,6 @@ public class SensorDataDTO {
     private Double temperature;
     private Double humidity;
     private Double soilMoisture;
+    private Boolean relay;
     private Instant timestamp;
 }

@@ -46,7 +46,7 @@ public class DeviceServiceImpl implements DeviceService {
         device.setUser(user);
         device.setName(createDeviceDTO.getName());
         device.setStatus("offline");
-        device.setStatusDelay(false);
+        device.setStatusRelay(false);
         device.setAutoWaterEnabled(false);
         device.setCreatedAt(Instant.now());
 

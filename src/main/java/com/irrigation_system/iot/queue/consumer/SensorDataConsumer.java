@@ -89,6 +89,11 @@ public class SensorDataConsumer {
                 soilReadings.add(soilReading);
                 updatedDeviceIds.add(device.getId());
             }
+
+            if (dto.getRelay() != null) {
+                device.setStatusRelay(dto.getRelay());
+                updatedDeviceIds.add(device.getId());
+            }
         }
 
         if (!airReadings.isEmpty()) {
