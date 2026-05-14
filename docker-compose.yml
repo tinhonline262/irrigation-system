@@ -46,10 +46,12 @@ services:
   irrigation-app:
     image: ${ECR_REGISTRY:-tker}/${ECR_REPOSITORY:-irrigation-system}:${IMAGE_TAG:-latest}
     container_name: ${CONTAINER_NAME:-irrigation-system}
+    user: "0:0"
     ports:
       - "80:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=${ENVIRONMENT_CONFIG:-prod}
+      - LOGGING_FILE_PATH=/app/logs
       - DATABASE_URL=jdbc:mysql://irrigation-mysql:3306/irrigation_system_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       - DATABASE_USERNAME=${DBMS_USERNAME:-admin_user}
       - DATABASE_PASSWORD=${DBMS_PASSWORD:-irrigation_password}
@@ -70,10 +72,45 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      loki:
+        condition: service_started
+    restart: unless-stopped
+    volumes:
+      - app_logs:/app/logs
+
+  loki:
+    image: grafana/loki:3.1.0
+    container_name: irrigation-system-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/loki-config.yml
+    volumes:
+      - loki_data:/loki
+      - ./loki-config.yml:/etc/loki/loki-config.yml:ro
+    networks:
+      - irrigation-network
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:3.1.0
+    container_name: irrigation-system-promtail
+    command: -config.file=/etc/promtail/promtail-config.yml -config.expand-env=true
+    volumes:
+      - app_logs:/app/logs:ro
+      - ./promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+      - promtail_positions:/tmp
+    networks:
+      - irrigation-network
+    depends_on:
+      loki:
+        condition: service_started
     restart: unless-stopped
 
 volumes:
   mysql_irrigation_data:
+  app_logs:
+  loki_data:
+  promtail_positions:
 
 networks:
   irrigation-network:
