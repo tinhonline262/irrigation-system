@@ -10,6 +10,7 @@ import com.irrigation_system.iot.entity.WateringLog;
 import com.irrigation_system.iot.repository.DeviceRepository;
 import com.irrigation_system.iot.repository.UserRepository;
 import com.irrigation_system.iot.repository.WateringLogRepository;
+import com.irrigation_system.iot.service.WateringNotificationService;
 import com.irrigation_system.iot.service.WateringService;
 import com.irrigation_system.iot.utility.AuthenticationUtils;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,7 @@ public class WateringServiceImpl implements WateringService {
     private final DeviceRepository deviceRepository;
     private final UserRepository userRepository;
     private final WateringLogRepository wateringLogRepository;
+    private final WateringNotificationService wateringNotificationService;
 
     @Override
     public DeviceAndUser verifyDeviceOwnership(String deviceId) {
@@ -108,6 +110,8 @@ public class WateringServiceImpl implements WateringService {
         wateringLog.setWaterAmountMl(waterAmountMl);
 
         WateringLog savedLog = wateringLogRepository.save(wateringLog);
+
+        wateringNotificationService.notifyWateringCompleted(device, waterAmountMl, false);
 
         return WateringLogDTO.builder()
                 .id(savedLog.getId())

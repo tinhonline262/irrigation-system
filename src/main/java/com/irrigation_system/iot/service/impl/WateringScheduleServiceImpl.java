@@ -10,6 +10,7 @@ import com.irrigation_system.iot.exception.ResourceNotFoundException;
 import com.irrigation_system.iot.repository.DeviceRepository;
 import com.irrigation_system.iot.repository.WateringScheduleRepository;
 import com.irrigation_system.iot.service.WateringScheduleService;
+import com.irrigation_system.iot.utility.WateringCronUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.support.CronExpression;
@@ -18,8 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -58,7 +57,7 @@ public class WateringScheduleServiceImpl implements WateringScheduleService {
 
         boolean enabled = dto.getEnabled() == null || dto.getEnabled();
         schedule.setEnabled(enabled);
-        schedule.setNextRunAt(enabled ? computeNextRunAt(schedule.getCronExpression()) : null);
+        schedule.setNextRunAt(enabled ? WateringCronUtils.computeNextRunAt(schedule.getCronExpression()) : null);
 
         schedule = wateringScheduleRepository.save(schedule);
         log.info("Created watering schedule {} for device {}", schedule.getId(), deviceId);
@@ -84,7 +83,7 @@ public class WateringScheduleServiceImpl implements WateringScheduleService {
         }
 
         schedule.setLastModifiedAt(Instant.now());
-        schedule.setNextRunAt(schedule.getEnabled() ? computeNextRunAt(schedule.getCronExpression()) : null);
+        schedule.setNextRunAt(schedule.getEnabled() ? WateringCronUtils.computeNextRunAt(schedule.getCronExpression()) : null);
 
         schedule = wateringScheduleRepository.save(schedule);
         return toDto(schedule);
@@ -100,7 +99,7 @@ public class WateringScheduleServiceImpl implements WateringScheduleService {
 
         schedule.setEnabled(dto.getEnabled());
         schedule.setLastModifiedAt(Instant.now());
-        schedule.setNextRunAt(schedule.getEnabled() ? computeNextRunAt(schedule.getCronExpression()) : null);
+        schedule.setNextRunAt(schedule.getEnabled() ? WateringCronUtils.computeNextRunAt(schedule.getCronExpression()) : null);
 
         schedule = wateringScheduleRepository.save(schedule);
         return toDto(schedule);
@@ -151,13 +150,6 @@ public class WateringScheduleServiceImpl implements WateringScheduleService {
             throw new ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Invalid cronExpression: " + e.getMessage());
         }
         return cron;
-    }
-
-    private Instant computeNextRunAt(String cron5) {
-        CronExpression expression = CronExpression.parse("0 " + cron5);
-        ZonedDateTime now = ZonedDateTime.now(ZoneId.systemDefault());
-        ZonedDateTime next = expression.next(now);
-        return next != null ? next.toInstant() : null;
     }
 
     private WateringScheduleDTO toDto(WateringSchedule schedule) {
