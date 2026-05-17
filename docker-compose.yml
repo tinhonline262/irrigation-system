@@ -9,6 +9,8 @@ services:
       MYSQL_DATABASE: irrigation_system_db
       MYSQL_USER: ${DBMS_USERNAME:-admin_user}
       MYSQL_PASSWORD: ${DBMS_PASSWORD:-irrigation_password}
+      TZ: Asia/Ho_Chi_Minh
+    command: --default-time-zone='+07:00'
     ports:
       - "3306:3306"
     volumes:
@@ -52,7 +54,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=${ENVIRONMENT_CONFIG:-prod}
       - LOGGING_FILE_PATH=/app/logs
-      - DATABASE_URL=jdbc:mysql://irrigation-mysql:3306/irrigation_system_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - DATABASE_URL=jdbc:mysql://irrigation-mysql:3306/irrigation_system_db?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
       - DATABASE_USERNAME=${DBMS_USERNAME:-admin_user}
       - DATABASE_PASSWORD=${DBMS_PASSWORD:-irrigation_password}
       - RABBITMQ_HOST=rabbitmq

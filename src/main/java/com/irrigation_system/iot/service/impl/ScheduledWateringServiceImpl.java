@@ -55,11 +55,15 @@ public class ScheduledWateringServiceImpl implements ScheduledWateringService {
     @Override
     public void processDueSchedules() {
         Instant now = Instant.now();
+        log.info("Scheduler check at: {}", now);
         var dueSchedules = wateringScheduleRepository.findByEnabledTrueAndNextRunAtLessThanEqual(now);
         if (dueSchedules.isEmpty()) {
+            log.info("No due watering schedules found");
             return;
         }
+        log.info("Processing {} due watering schedule(s) - now={}", dueSchedules.size(), now);
         for (WateringSchedule schedule : dueSchedules) {
+            log.info("  Schedule {} nextRunAt={}", schedule.getId(), schedule.getNextRunAt());
             try {
                 scheduleProcessor.processOneSchedule(schedule.getId())
                         .ifPresent(this::scheduleOffTask);

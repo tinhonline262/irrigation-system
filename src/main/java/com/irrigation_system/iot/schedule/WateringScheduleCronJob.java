@@ -18,10 +18,8 @@ public class WateringScheduleCronJob {
     @Scheduled(cron = "${app.irrigation.schedule-cron:0 * * * * *}")
     public void runDueSchedules() {
         try {
-            log.debug("Starting scheduled watering job execution");
             scheduledWateringService.processDueSchedules();
         } catch (Exception ex) {
-            // Log at ERROR level to ensure visibility in WARN-level environments
             log.error("ERROR: Scheduled watering job failed to process due schedules", ex);
         }
     }
