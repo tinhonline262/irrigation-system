@@ -54,6 +54,14 @@ public class ScheduledWateringScheduleProcessor {
             return Optional.empty();
         }
 
+        // If the schedule's nextRunAt is more than 5 minutes in the past, it's a missed schedule
+        // (e.g., system was offline). We clean/skip it by advancing nextRunAt without watering.
+        if (now.isAfter(schedule.getNextRunAt().plusSeconds(300))) {
+            log.warn("Schedule {} is missed (nextRunAt={}, now={}). Skipping watering and advancing nextRunAt.", scheduleId, schedule.getNextRunAt(), now);
+            advanceNextRunAt(schedule);
+            return Optional.empty();
+        }
+
         String chipId = device.getChipId();
         if (chipId == null || chipId.isBlank()) {
             log.warn("Schedule {} device {} has no chipId; advancing nextRunAt (skip-missed)", scheduleId, device.getId());
