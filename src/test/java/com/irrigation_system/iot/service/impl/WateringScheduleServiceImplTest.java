@@ -50,7 +50,6 @@ class WateringScheduleServiceImplTest {
 
         CreateWateringScheduleDTO dto = new CreateWateringScheduleDTO();
         dto.setCronExpression("0 6 * * *");
-        dto.setWaterAmountMl(250f);
         dto.setEnabled(true);
 
         WateringScheduleDTO result = scheduleService.createSchedule("device-1", "user-1", false, dto);
@@ -72,7 +71,6 @@ class WateringScheduleServiceImplTest {
 
         CreateWateringScheduleDTO dto = new CreateWateringScheduleDTO();
         dto.setCronExpression("99 99 * * *");
-        dto.setWaterAmountMl(250f);
 
         assertThatThrownBy(() -> scheduleService.createSchedule("device-1", "user-1", false, dto))
                 .isInstanceOf(org.springframework.web.server.ResponseStatusException.class)
@@ -91,7 +89,6 @@ class WateringScheduleServiceImplTest {
 
         CreateWateringScheduleDTO dto = new CreateWateringScheduleDTO();
         dto.setCronExpression("6 * * *");
-        dto.setWaterAmountMl(250f);
 
         assertThatThrownBy(() -> scheduleService.createSchedule("device-1", "user-1", false, dto))
                 .isInstanceOf(org.springframework.web.server.ResponseStatusException.class)
@@ -111,7 +108,6 @@ class WateringScheduleServiceImplTest {
 
         CreateWateringScheduleDTO dto = new CreateWateringScheduleDTO();
         dto.setCronExpression("0 6 * * *");
-        dto.setWaterAmountMl(250f);
         dto.setEnabled(false);
 
         WateringScheduleDTO result = scheduleService.createSchedule("device-1", "user-1", false, dto);
