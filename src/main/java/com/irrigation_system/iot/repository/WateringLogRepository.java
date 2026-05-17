@@ -26,13 +26,11 @@ public interface WateringLogRepository extends JpaRepository<WateringLog, String
             "from watering_log where device_id = :deviceId group by date(started_at) order by date(started_at) desc", nativeQuery = true)
     List<Object[]> findDailyWateringStatsByDeviceId(@Param("deviceId") String deviceId);
 
-    @Query("SELECT w FROM WateringLog w LEFT JOIN FETCH w.triggeredBy LEFT JOIN FETCH w.device " +
-            "WHERE w.device.id = :deviceId AND w.triggerType = :triggerType AND w.endedAt IS NULL ORDER BY w.startedAt DESC")
-    Optional<WateringLog> findFirstByDevice_IdAndTriggerTypeAndEndedAtIsNullOrderByStartedAtDesc(@Param("deviceId") String deviceId, @Param("triggerType") String triggerType);
+    @EntityGraph(attributePaths = {"device", "triggeredBy"})
+    Optional<WateringLog> findFirstByDevice_IdAndTriggerTypeAndEndedAtIsNullOrderByStartedAtDesc(String deviceId, String triggerType);
 
-    @Query("SELECT w FROM WateringLog w LEFT JOIN FETCH w.triggeredBy LEFT JOIN FETCH w.device " +
-            "WHERE w.device.id = :deviceId AND w.endedAt IS NULL ORDER BY w.startedAt DESC")
-    Optional<WateringLog> findFirstByDevice_IdAndEndedAtIsNullOrderByStartedAtDesc(@Param("deviceId") String deviceId);
+    @EntityGraph(attributePaths = {"device", "triggeredBy"})
+    Optional<WateringLog> findFirstByDevice_IdAndEndedAtIsNullOrderByStartedAtDesc(String deviceId);
 
     @Query("SELECT w FROM WateringLog w LEFT JOIN FETCH w.device LEFT JOIN FETCH w.triggeredBy WHERE w.device.id = :deviceId ORDER BY w.startedAt DESC")
     Stream<WateringLog> findByDevice_IdOrderByStartedAtDesc(@Param("deviceId") String deviceId);
