@@ -41,7 +41,6 @@ public class SensorDataConsumer {
     @Transactional
     @RabbitListener(queues = RabbitMQConfig.SENSOR_DATA_QUEUE, containerFactory = "rabbitListenerContainerFactory")
     public void receiveSensorDataBatch(List<SensorDataDTO> batch) {
-        log.info("Received batch of {} sensor data items", batch.size());
         if (batch.isEmpty()) {
             return;
         }
@@ -107,7 +106,5 @@ public class SensorDataConsumer {
             DashboardSummaryDTO summary = dashboardService.getDashboardSummaryInternal(deviceId);
             messagingTemplate.convertAndSend("/topic/dashboard/" + deviceId, summary);
         }
-
-        log.info("Successfully saved {} air readings and {} soil readings", airReadings.size(), soilReadings.size());
     }
 }

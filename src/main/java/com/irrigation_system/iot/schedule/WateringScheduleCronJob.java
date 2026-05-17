@@ -17,6 +17,12 @@ public class WateringScheduleCronJob {
     // Running multiple containers may execute the same schedule twice.
     @Scheduled(cron = "${app.irrigation.schedule-cron:0 * * * * *}")
     public void runDueSchedules() {
-        scheduledWateringService.processDueSchedules();
+        try {
+            log.debug("Starting scheduled watering job execution");
+            scheduledWateringService.processDueSchedules();
+        } catch (Exception ex) {
+            // Log at ERROR level to ensure visibility in WARN-level environments
+            log.error("ERROR: Scheduled watering job failed to process due schedules", ex);
+        }
     }
 }
