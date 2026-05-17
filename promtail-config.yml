@@ -16,9 +16,9 @@ scrape_configs:
         labels:
           job: irrigation-system
           # Promtail supports environment variable expansion if run with -config.expand-env=true
-          app: ${APP_NAME:-identity-service}
+          app: ${APP_NAME:-irrigation-system}
           env: ${APP_ENV:-local}
-          __path__: /app/logs/app.log
+          __path__: /app/logs/app*.log
     
     # Optional pipeline to extract fields from JSON and create Loki labels dynamically
     # pipeline_stages:

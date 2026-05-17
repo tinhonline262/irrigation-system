@@ -26,11 +26,15 @@
             <!-- Log file will be placed in $LOG_PATH -->
             <file>${logPath}/app.log</file>
 
-            <!-- Rotate logs daily -->
-            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>${logPath}/app.%d{yyyy-MM-dd}.log</fileNamePattern>
-                <!-- Keep 30 days of history -->
-                <maxHistory>30</maxHistory>
+            <!-- Rotate logs daily AND by size to prevent huge files -->
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>${logPath}/app.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+                <!-- Rotate when file reaches 100MB -->
+                <maxFileSize>100MB</maxFileSize>
+                <!-- Keep 7 days of history (reduce from 30 to prevent log bloat) -->
+                <maxHistory>7</maxHistory>
+                <!-- Optional: Max total size of all log files to 500MB -->
+                <totalSizeCap>500MB</totalSizeCap>
             </rollingPolicy>
 
             <!-- Logstash Encoder for JSON format -->

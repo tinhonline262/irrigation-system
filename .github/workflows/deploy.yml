@@ -101,6 +101,9 @@ jobs:
             sudo docker compose down || true
             sudo docker compose up -d
             
+            # Clean all old log files (keep only current app.log)
+            sudo docker exec $CONTAINER_NAME sh -c 'rm -f /app/logs/app.*.*.log' || true
+            
             # Remove .env for security after deploying
             rm .env
             
