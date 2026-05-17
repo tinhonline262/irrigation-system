@@ -76,7 +76,7 @@ class UserServiceImpl implements UserService {
         UserEntity userEntity = getUserEntity(username);
         // Soft delete
         userRepository.delete(userEntity);
-        auditLogService.logAction("USER_DELETE", userEntity.getId(), "{\"username\":\"" + username + "\"}");
+        auditLogService.logAction("USER_DELETE", userEntity.getId(), java.util.Map.of("username", username));
         log.info("User {} deleted (soft delete)", username);
     }
 
@@ -95,7 +95,7 @@ class UserServiceImpl implements UserService {
         user.setRoles(new HashSet<>(roles));
         
         user = userRepository.save(user);
-        auditLogService.logAction("USER_UPDATE_ROLES", id, "{\"roles\":" + adminUpdateUserRolesDTO.getRoles() + "}");
+        auditLogService.logAction("USER_UPDATE_ROLES", id, adminUpdateUserRolesDTO);
         return userMapper.mapToProfileDTO(user);
     }
 
@@ -106,7 +106,7 @@ class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         // Soft delete
         userRepository.delete(userEntity);
-        auditLogService.logAction("USER_DELETE_BY_ID", id, "{\"deletedId\":\"" + id + "\"}");
+        auditLogService.logAction("USER_DELETE_BY_ID", id, java.util.Map.of("deletedId", id));
         log.info("User id {} deleted (soft delete)", id);
     }
 
@@ -117,7 +117,7 @@ class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         userEntity.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(userEntity);
-        auditLogService.logAction("USER_RESET_PASSWORD", id, "{}");
+        auditLogService.logAction("USER_RESET_PASSWORD", id, java.util.Map.of());
     }
 
     private UserEntity getUserEntity(String username) {

@@ -31,7 +31,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     private final AuditLogRepository auditLogRepository;
     private final UserRepository userRepository;
     private final AuditLogMapper auditLogMapper;
-    // ObjectMapper not configured in mapper out-of-box, logging json string format if passed natively
+    private final ObjectMapper objectMapper;
 
     @Override
     public Page<AuditLogDto> getAuditLogs(String userId, LocalDateTime from, LocalDateTime to, Pageable pageable) {
@@ -67,6 +67,20 @@ public class AuditLogServiceImpl implements AuditLogService {
                 .payload(payload)
                 .build();
         auditLogRepository.save(auditLog);
+    }
+
+    /**
+     * Log action with object payload that will be serialized to JSON
+     */
+    @Override
+    public void logAction(String action, String targetId, Object payloadObject) {
+        try {
+            String jsonPayload = objectMapper.writeValueAsString(payloadObject);
+            logAction(action, targetId, jsonPayload);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize audit log payload to JSON", e);
+            logAction(action, targetId, "{}");
+        }
     }
 
     private UserEntity getCurrentUser() {

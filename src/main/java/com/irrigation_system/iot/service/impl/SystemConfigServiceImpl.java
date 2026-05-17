@@ -44,7 +44,7 @@ public class SystemConfigServiceImpl implements SystemConfigService {
             publishSampleRateLine(value);
         }
 
-        auditLogService.logAction("CONFIG_UPDATE", key, "{\"value\":\"" + value + "\"}");
+        auditLogService.logAction("CONFIG_UPDATE", key, java.util.Map.of("value", value));
 
         return toDto(config);
     }

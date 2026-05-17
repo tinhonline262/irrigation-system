@@ -8,41 +8,38 @@
     <springProperty scope="context" name="appEnv" source="app.env" defaultValue="local"/>
     <springProperty scope="context" name="logPath" source="logging.file.path" defaultValue="logs"/>
 
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
-        </encoder>
-    </appender>
-
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <!-- Log file will be placed in $LOG_PATH -->
-        <file>${logPath}/app.log</file>
-        
-        <!-- Rotate logs daily -->
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${logPath}/app.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <!-- Keep 30 days of history -->
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
-
-        <!-- Logstash Encoder for JSON format -->
-        <!-- Fields like timestamp, level, logger, thread, message, stack_trace, and MDC are included by default -->
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <!-- Include custom fields app and env -->
-            <customFields>{"app":"${springAppName}","env":"${appEnv}"}</customFields>
-        </encoder>
-    </appender>
-
-    <!-- Dev profile uses both CONSOLE and FILE -->
+    <!-- Dev profile logs to console only -->
     <springProfile name="dev, default">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            </encoder>
+        </appender>
         <root>
             <appender-ref ref="CONSOLE" />
-            <appender-ref ref="FILE" />
         </root>
     </springProfile>
 
     <!-- Other profiles use only FILE -->
     <springProfile name="!dev &amp; !default">
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <!-- Log file will be placed in $LOG_PATH -->
+            <file>${logPath}/app.log</file>
+
+            <!-- Rotate logs daily -->
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>${logPath}/app.%d{yyyy-MM-dd}.log</fileNamePattern>
+                <!-- Keep 30 days of history -->
+                <maxHistory>30</maxHistory>
+            </rollingPolicy>
+
+            <!-- Logstash Encoder for JSON format -->
+            <!-- Fields like timestamp, level, logger, thread, message, stack_trace, and MDC are included by default -->
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <!-- Include custom fields app and env -->
+                <customFields>{"app":"${springAppName}","env":"${appEnv}"}</customFields>
+            </encoder>
+        </appender>
         <root>
             <appender-ref ref="FILE" />
         </root>

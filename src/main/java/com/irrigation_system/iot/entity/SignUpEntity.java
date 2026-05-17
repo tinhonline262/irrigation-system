@@ -1,8 +1,10 @@
 package com.irrigation_system.iot.entity;
 
 import com.irrigation_system.iot.enumeration.SignUpStatus;
+import com.irrigation_system.iot.listener.SignUpEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "sign_up")
+@EntityListeners(SignUpEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
