@@ -53,6 +53,8 @@ services:
       - "80:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=${ENVIRONMENT_CONFIG:-prod}
+      - TZ=Asia/Ho_Chi_Minh
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Ho_Chi_Minh
       - LOGGING_FILE_PATH=/app/logs
       - DATABASE_URL=jdbc:mysql://irrigation-mysql:3306/irrigation_system_db?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
       - DATABASE_USERNAME=${DBMS_USERNAME:-admin_user}

@@ -15,7 +15,7 @@ public class WateringScheduleCronJob {
 
     // Not safe for horizontal scaling without distributed lock (e.g. ShedLock).
     // Running multiple containers may execute the same schedule twice.
-    @Scheduled(cron = "${app.irrigation.schedule-cron:0 * * * * *}")
+    @Scheduled(cron = "${app.irrigation.schedule-cron:0 * * * * *}", zone = "Asia/Ho_Chi_Minh")
     public void runDueSchedules() {
         try {
             scheduledWateringService.processDueSchedules();

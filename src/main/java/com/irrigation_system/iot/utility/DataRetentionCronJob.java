@@ -20,7 +20,7 @@ public class DataRetentionCronJob {
     private final SoilSensorReadingRepository soilSensorReadingRepository;
     private final AirSensorReadingRepository airSensorReadingRepository;
 
-//    @Scheduled(cron = "0 0 2 * * ?") // Run every day at 2 AM
+//    @Scheduled(cron = "0 0 2 * * ?", zone = "Asia/Ho_Chi_Minh") // Run every day at 2 AM
     @Transactional
     public void purgeOldSensorData() {
         log.info("Starting data retention purge cron job...");

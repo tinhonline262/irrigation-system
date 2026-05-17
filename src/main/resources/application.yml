@@ -3,6 +3,8 @@ spring:
     active: ${ENVIRONMENT_CONFIG:dev}
   application:
     name: irrigation-system
+  jackson:
+    time-zone: Asia/Ho_Chi_Minh
   main:
     allow-bean-definition-overriding: true
   mvc:
