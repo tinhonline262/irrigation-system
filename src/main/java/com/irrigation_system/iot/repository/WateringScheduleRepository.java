@@ -5,6 +5,8 @@ import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -23,5 +25,6 @@ public interface WateringScheduleRepository extends JpaRepository<WateringSchedu
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @EntityGraph(attributePaths = "device")
-    Optional<WateringSchedule> findByIdForUpdate(String id);
+    @Query("SELECT w FROM WateringSchedule w WHERE w.id = :id")
+    Optional<WateringSchedule> findByIdWithLock(@Param("id") String id);
 }

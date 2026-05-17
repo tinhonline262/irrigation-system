@@ -35,7 +35,7 @@ public class ScheduledWateringScheduleProcessor {
 
     @Transactional
     public Optional<ScheduledWateringRun> processOneSchedule(String scheduleId) {
-        WateringSchedule schedule = wateringScheduleRepository.findByIdForUpdate(scheduleId).orElse(null);
+        WateringSchedule schedule = wateringScheduleRepository.findByIdWithLock(scheduleId).orElse(null);
         if (schedule == null) {
             return Optional.empty();
         }
