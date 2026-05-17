@@ -167,7 +167,7 @@ class WateringServiceImplTest {
         try (MockedStatic<AuthenticationUtils> utilities = mockStatic(AuthenticationUtils.class)) {
             utilities.when(AuthenticationUtils::getCurrentUsername).thenReturn("tester");
 
-            WateringLogDTO result = wateringService.stopManualWatering("device-1", 120f);
+            WateringLogDTO result = wateringService.stopManualWatering("device-1");
 
             assertThat(result.getEndedAt()).isNotNull();
             assertThat(result.getWaterAmountMl()).isEqualTo(120f);
@@ -194,7 +194,7 @@ class WateringServiceImplTest {
         try (MockedStatic<AuthenticationUtils> utilities = mockStatic(AuthenticationUtils.class)) {
             utilities.when(AuthenticationUtils::getCurrentUsername).thenReturn("tester");
 
-            assertThatThrownBy(() -> wateringService.stopManualWatering("device-1", 50f))
+            assertThatThrownBy(() -> wateringService.stopManualWatering("device-1"))
                     .isInstanceOf(ResponseStatusException.class)
                     .extracting("status")
                     .isEqualTo(org.springframework.http.HttpStatus.BAD_REQUEST);
