@@ -59,7 +59,6 @@ public class ScheduledWateringServiceImpl implements ScheduledWateringService {
         if (dueSchedules.isEmpty()) {
             return;
         }
-        log.debug("Processing {} due watering schedule(s)", dueSchedules.size());
         for (WateringSchedule schedule : dueSchedules) {
             try {
                 scheduleProcessor.processOneSchedule(schedule.getId())
@@ -76,7 +75,6 @@ public class ScheduledWateringServiceImpl implements ScheduledWateringService {
                 () -> completeScheduledWatering(run.wateringLogId(), run.chipId(), run.waterAmountMl()),
                 stopAt
         );
-        log.debug("Scheduled OFF for log {} at {}", run.wateringLogId(), stopAt);
     }
 
     @Override

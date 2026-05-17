@@ -11,6 +11,9 @@
     <!-- Dev profile logs to console only -->
     <springProfile name="dev, default">
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>INFO</level>
+            </filter>
             <encoder>
                 <pattern>${CONSOLE_LOG_PATTERN}</pattern>
             </encoder>
@@ -23,6 +26,10 @@
     <!-- Other profiles use only FILE -->
     <springProfile name="!dev &amp; !default">
         <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <!-- Filter out DEBUG and TRACE logs -->
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>INFO</level>
+            </filter>
             <!-- Log file will be placed in $LOG_PATH -->
             <file>${logPath}/app.log</file>
 
