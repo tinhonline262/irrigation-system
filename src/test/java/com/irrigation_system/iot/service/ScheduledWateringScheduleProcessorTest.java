@@ -59,7 +59,7 @@ class ScheduledWateringScheduleProcessorTest {
         schedule.setWaterAmountMl(100f);
         schedule.setDevice(device);
 
-        when(wateringScheduleRepository.findByIdForUpdate("sched-1")).thenReturn(Optional.of(schedule));
+        when(wateringScheduleRepository.findByIdWithLock("sched-1")).thenReturn(Optional.of(schedule));
     }
 
     @Test

@@ -5,7 +5,7 @@ spring:
     allow-bean-definition-overriding: true
   mvc:
     async:
-      request-timeout: -1  # no timeout for StreamingResponseBody (CSV export)
+      request-timeout: -1 # no timeout for StreamingResponseBody (CSV export)
   datasource:
     url: ${DATABASE_URL:jdbc:mysql://localhost:3306/irrigation_system_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
     username: ${DATABASE_USERNAME:admin_user}
@@ -55,7 +55,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: '*'
   endpoint:
     health:
       show-details: always
@@ -63,8 +63,8 @@ management:
 identity:
   jwt:
     secret-key: ${JWT_SECRET_KEY:cb3f30b0ec715f1bcbead50dc9d77786c038b569f2f6adb9a9e724e07ffd6c17}
-    token-exp: PT15M         # 15 minutes
-    refresh-token-exp: P7D   # 7 days
+    token-exp: PT15M # 15 minutes
+    refresh-token-exp: P7D # 7 days
 
 logging:
   file:
@@ -72,3 +72,8 @@ logging:
 
 app:
   env: ${APP_ENV:local}
+  irrigation:
+    schedule-cron: '0 * * * * *'
+    flow-rate-ml-per-minute: 100
+    min-duration-seconds: 10
+    max-duration-minutes: 120
