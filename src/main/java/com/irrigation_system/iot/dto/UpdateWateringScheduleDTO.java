@@ -5,10 +5,11 @@ import lombok.Data;
 
 @Data
 public class UpdateWateringScheduleDTO {
+
     private String cronExpression;
 
-    @Positive(message = "Water amount must be > 0")
-    private Float waterAmountMl;
+    @Positive(message = "Duration must be > 0")
+    private Long durationInMinutes;
 
     private Boolean enabled;
 }

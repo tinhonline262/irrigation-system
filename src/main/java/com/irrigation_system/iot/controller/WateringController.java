@@ -43,11 +43,8 @@ public class WateringController {
     }
 
     @PostMapping("/{deviceId}/water/stop")
-    public ResponseEntity<ApiResponse<WateringLogDTO>> stopManualWatering(
-            @PathVariable String deviceId,
-            @RequestBody(required = false) StopWateringRequest request) {
-        Float waterAmountMl = (request != null) ? request.getWaterAmountMl() : null;
-        WateringLogDTO wateringLog = wateringService.stopManualWatering(deviceId, waterAmountMl);
+    public ResponseEntity<ApiResponse<WateringLogDTO>> stopManualWatering(@PathVariable String deviceId) {
+        WateringLogDTO wateringLog = wateringService.stopManualWatering(deviceId);
         Device device = wateringService.verifyDeviceOwnership(deviceId).device;
         deviceControlProducer.sendControlCommand(device.getChipId(), "OFF");
         return ResponseEntity.ok(ApiResponse.success(200, "Manual watering stopped", wateringLog));

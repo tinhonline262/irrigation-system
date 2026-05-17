@@ -29,7 +29,6 @@ public class DeviceControlProducer {
         Message message = new Message(command.getBytes(), props);
 
         rabbitTemplate.send(MQTT_EXCHANGE, routingKey, message);
-
         log.info("Sent control command '{}' to chipId {} on topic '{}'", command, chipId, routingKey);
     }
 }

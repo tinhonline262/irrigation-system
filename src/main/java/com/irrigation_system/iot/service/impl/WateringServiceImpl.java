@@ -12,6 +12,7 @@ import com.irrigation_system.iot.repository.UserRepository;
 import com.irrigation_system.iot.repository.WateringLogRepository;
 import com.irrigation_system.iot.service.WateringNotificationService;
 import com.irrigation_system.iot.service.WateringService;
+import com.irrigation_system.iot.properties.IrrigationScheduleProperties;
 import com.irrigation_system.iot.utility.AuthenticationUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -44,6 +45,7 @@ public class WateringServiceImpl implements WateringService {
     private final UserRepository userRepository;
     private final WateringLogRepository wateringLogRepository;
     private final WateringNotificationService wateringNotificationService;
+    private final IrrigationScheduleProperties irrigationProperties;
 
     @Override
     public DeviceAndUser verifyDeviceOwnership(String deviceId) {
@@ -98,7 +100,7 @@ public class WateringServiceImpl implements WateringService {
     }
 
     @Override
-    public WateringLogDTO stopManualWatering(String deviceId, Float waterAmountMl) {
+    public WateringLogDTO stopManualWatering(String deviceId) {
         DeviceAndUser validation = verifyDeviceOwnership(deviceId);
         Device device = validation.device;
 
@@ -106,7 +108,15 @@ public class WateringServiceImpl implements WateringService {
                 .findFirstByDevice_IdAndTriggerTypeAndEndedAtIsNullOrderByStartedAtDesc(device.getId(), "manual")
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No active manual watering session found for this device"));
 
-        wateringLog.setEndedAt(Instant.now());
+        Instant now = Instant.now();
+        wateringLog.setEndedAt(now);
+
+        long durationSeconds = Duration.between(wateringLog.getStartedAt(), now).getSeconds();
+        if (durationSeconds < 0) durationSeconds = 0;
+        
+        double mlPerSecond = irrigationProperties.getFlowRateMlPerMinute() / 60.0;
+        float waterAmountMl = (float) (durationSeconds * mlPerSecond);
+        
         wateringLog.setWaterAmountMl(waterAmountMl);
 
         WateringLog savedLog = wateringLogRepository.save(wateringLog);

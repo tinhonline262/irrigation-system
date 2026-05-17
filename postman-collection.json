@@ -1315,16 +1315,6 @@
                   "value": "{{deviceId}}"
                 }
               ]
-            },
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"waterAmountMl\": 500.0\n}"
             }
           }
         },
@@ -1543,7 +1533,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"cronExpression\": \"0 0 6 * * ?\",\n  \"waterAmountMl\": 1000.0,\n  \"enabled\": true\n}"
+              "raw": "{\n  \"cronExpression\": \"0 0 6 * * ?\",\n  \"durationInMinutes\": 10,\n  \"enabled\": true\n}"
             }
           }
         },
@@ -1582,7 +1572,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"cronExpression\": \"0 30 6 * * ?\",\n  \"waterAmountMl\": 1500.0,\n  \"enabled\": true\n}"
+              "raw": "{\n  \"cronExpression\": \"0 30 6 * * ?\",\n  \"durationInMinutes\": 15,\n  \"enabled\": true\n}"
             }
           }
         },

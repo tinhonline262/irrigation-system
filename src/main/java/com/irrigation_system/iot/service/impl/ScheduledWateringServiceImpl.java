@@ -37,6 +37,10 @@ public class ScheduledWateringServiceImpl implements ScheduledWateringService {
     private final TaskScheduler wateringScheduleTaskScheduler;
     private final WateringNotificationService wateringNotificationService;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    @org.springframework.context.annotation.Lazy
+    private ScheduledWateringService self;
+
     public ScheduledWateringServiceImpl(
             WateringScheduleRepository wateringScheduleRepository,
             WateringLogRepository wateringLogRepository,
@@ -55,10 +59,8 @@ public class ScheduledWateringServiceImpl implements ScheduledWateringService {
     @Override
     public void processDueSchedules() {
         Instant now = Instant.now();
-        log.info("Scheduler check at: {}", java.time.ZonedDateTime.now());
         var dueSchedules = wateringScheduleRepository.findByEnabledTrueAndNextRunAtLessThanEqual(now);
         if (dueSchedules.isEmpty()) {
-            log.info("No due watering schedules found");
             return;
         }
         log.info("Processing {} due watering schedule(s) - now={}", dueSchedules.size(), java.time.ZonedDateTime.now());
@@ -76,7 +78,7 @@ public class ScheduledWateringServiceImpl implements ScheduledWateringService {
     private void scheduleOffTask(ScheduledWateringRun run) {
         Instant stopAt = Instant.now().plus(run.duration());
         wateringScheduleTaskScheduler.schedule(
-                () -> completeScheduledWatering(run.wateringLogId(), run.chipId(), run.waterAmountMl()),
+                () -> self.completeScheduledWatering(run.wateringLogId(), run.chipId(), run.waterAmountMl()),
                 stopAt
         );
     }

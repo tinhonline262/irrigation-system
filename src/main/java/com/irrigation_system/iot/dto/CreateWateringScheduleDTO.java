@@ -11,9 +11,9 @@ public class CreateWateringScheduleDTO {
     @NotBlank(message = "Cron expression is required")
     private String cronExpression;
 
-    @NotNull(message = "Water amount is required")
-    @Positive(message = "Water amount must be > 0")
-    private Float waterAmountMl;
+    @NotNull(message = "Duration in minutes is required")
+    @Positive(message = "Duration must be > 0")
+    private Long durationInMinutes;
 
     private Boolean enabled;
 }

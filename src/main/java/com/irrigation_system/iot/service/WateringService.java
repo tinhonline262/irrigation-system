@@ -26,7 +26,7 @@ public interface WateringService {
     
     WateringLogDTO startManualWatering(String deviceId);
     
-    WateringLogDTO stopManualWatering(String deviceId, Float waterAmountMl);
+    WateringLogDTO stopManualWatering(String deviceId);
     
     WateringStatusDTO getWateringStatus(String deviceId);
     

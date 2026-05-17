@@ -10,6 +10,7 @@ import com.irrigation_system.iot.exception.ResourceNotFoundException;
 import com.irrigation_system.iot.repository.DeviceRepository;
 import com.irrigation_system.iot.repository.WateringScheduleRepository;
 import com.irrigation_system.iot.service.WateringScheduleService;
+import com.irrigation_system.iot.properties.IrrigationScheduleProperties;
 import com.irrigation_system.iot.utility.WateringCronUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ public class WateringScheduleServiceImpl implements WateringScheduleService {
 
     private final DeviceRepository deviceRepository;
     private final WateringScheduleRepository wateringScheduleRepository;
+    private final IrrigationScheduleProperties irrigationProperties;
 
     @Override
     @Transactional(readOnly = true)
@@ -53,7 +55,12 @@ public class WateringScheduleServiceImpl implements WateringScheduleService {
         schedule.setCreatedAt(Instant.now());
         schedule.setDevice(device);
         schedule.setCronExpression(normalizeCron(dto.getCronExpression()));
-        schedule.setWaterAmountMl(dto.getWaterAmountMl());
+        
+        float calculatedMl = 0f;
+        if (dto.getDurationInMinutes() != null) {
+            calculatedMl = (float) (dto.getDurationInMinutes() * irrigationProperties.getFlowRateMlPerMinute());
+        }
+        schedule.setWaterAmountMl(calculatedMl);
 
         boolean enabled = dto.getEnabled() == null || dto.getEnabled();
         schedule.setEnabled(enabled);
@@ -75,8 +82,9 @@ public class WateringScheduleServiceImpl implements WateringScheduleService {
         if (dto.getCronExpression() != null && !dto.getCronExpression().isBlank()) {
             schedule.setCronExpression(normalizeCron(dto.getCronExpression()));
         }
-        if (dto.getWaterAmountMl() != null) {
-            schedule.setWaterAmountMl(dto.getWaterAmountMl());
+        if (dto.getDurationInMinutes() != null) {
+            float calculatedMl = (float) (dto.getDurationInMinutes() * irrigationProperties.getFlowRateMlPerMinute());
+            schedule.setWaterAmountMl(calculatedMl);
         }
         if (dto.getEnabled() != null) {
             schedule.setEnabled(dto.getEnabled());
@@ -157,7 +165,12 @@ public class WateringScheduleServiceImpl implements WateringScheduleService {
         dto.setId(schedule.getId());
         dto.setDeviceId(schedule.getDevice() != null ? schedule.getDevice().getId() : null);
         dto.setCronExpression(schedule.getCronExpression());
-        dto.setWaterAmountMl(schedule.getWaterAmountMl());
+        
+        if (schedule.getWaterAmountMl() != null) {
+            long durationMins = Math.round(schedule.getWaterAmountMl() / irrigationProperties.getFlowRateMlPerMinute());
+            dto.setDurationInMinutes(durationMins);
+        }
+        
         dto.setEnabled(schedule.getEnabled());
         dto.setNextRunAt(schedule.getNextRunAt());
         return dto;
