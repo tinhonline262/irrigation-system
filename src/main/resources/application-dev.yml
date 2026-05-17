@@ -1,11 +1,19 @@
-spring:
-  config:
-    activate:
-      on-profile: dev
-
 logging:
   level:
-    root: DEBUG
+    root: INFO
+    com.irrigation_system.iot: INFO
+    org.hibernate: INFO
+    org.hibernate.SQL: OFF
+    org.hibernate.orm: INFO
+    org.hibernate.validator: INFO
+    org.jboss.logging: INFO
+    org.springframework: INFO
+    org.springframework.boot: INFO
+    org.springframework.boot.devtools: INFO
+    org.springframework.context: INFO
+    org.springframework.boot.actuate: INFO
+    com.zaxxer.hikari: INFO
+    com.mysql.cj: INFO
 
 management:
   endpoint:

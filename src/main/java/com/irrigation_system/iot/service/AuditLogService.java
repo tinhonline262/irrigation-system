@@ -9,4 +9,5 @@ import java.time.LocalDateTime;
 public interface AuditLogService {
     Page<AuditLogDto> getAuditLogs(String userId, LocalDateTime from, LocalDateTime to, Pageable pageable);
     void logAction(String action, String targetId, String payload);
+    void logAction(String action, String targetId, Object payloadObject);
 }

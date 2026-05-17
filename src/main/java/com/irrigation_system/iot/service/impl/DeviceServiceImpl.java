@@ -60,7 +60,7 @@ public class DeviceServiceImpl implements DeviceService {
         deviceDTO.setUsername(user.getUsername());
         deviceDTO.setStatus(device.getStatus());
         deviceDTO.setAutoWaterEnabled(device.getAutoWaterEnabled());
-        auditLogService.logAction("CREATE_DEVICE", device.getId(), "{\"deviceName\":\"" + device.getName() + "\"}");
+        auditLogService.logAction("CREATE_DEVICE", device.getId(), java.util.Map.of("deviceName", device.getName()));
         return deviceDTO;
     }
 
@@ -136,7 +136,7 @@ public class DeviceServiceImpl implements DeviceService {
         device.setClaimedAt(java.time.Instant.now());
         device = deviceRepository.save(device);
 
-        auditLogService.logAction("CLAIM_DEVICE", device.getId(), "{\"chipId\":\"" + chipId + "\"}");
+        auditLogService.logAction("CLAIM_DEVICE", device.getId(), java.util.Map.of("chipId", chipId));
 
         return deviceMapper.mapToDTO(device);
     }
@@ -156,7 +156,7 @@ public class DeviceServiceImpl implements DeviceService {
         device.setClaimedAt(null);
         deviceRepository.save(device);
 
-        auditLogService.logAction("UNCLAIM_DEVICE", device.getId(), "{}");
+        auditLogService.logAction("UNCLAIM_DEVICE", device.getId(), java.util.Map.of());
     }
 
     @Override

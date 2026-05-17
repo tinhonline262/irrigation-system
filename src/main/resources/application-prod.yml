@@ -1,0 +1,17 @@
+logging:
+  level:
+    root: WARN
+    com.irrigation_system.iot: INFO
+    org.hibernate: WARN
+    org.springframework: WARN
+    org.springframework.boot: WARN
+    com.zaxxer.hikari: WARN
+
+management:
+  endpoint:
+    health:
+      show-details: when-authorized
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics

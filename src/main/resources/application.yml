@@ -1,6 +1,8 @@
 spring:
+  profiles:
+    active: ${ENVIRONMENT_CONFIG:dev}
   application:
-    name: identity-service
+    name: irrigation-system
   main:
     allow-bean-definition-overriding: true
   mvc:
@@ -40,22 +42,22 @@ spring:
         batch-size: 200
         consumer-batch-enabled: true
   mail:
-    host: live.smtp.mailtrap.io
-    port: 587
-    username: api
-    password: ${MAILTRAP_API_KEY}
+    host: ${HOST_SMTP:smtp.gmail.com}
+    port: ${PORT_SMTP:587}
+    username: ${USERNAME_SMTP:mentorbookingnotification@gmail.com}
+    password: ${PASSWORD_SMTP:idejizktdncupvmd}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
-            enable: false
+            enable: true
 
 management:
   endpoints:
     web:
       exposure:
-        include: '*'
+        include: "*"
   endpoint:
     health:
       show-details: always
@@ -63,9 +65,11 @@ management:
 identity:
   jwt:
     secret-key: ${JWT_SECRET_KEY:cb3f30b0ec715f1bcbead50dc9d77786c038b569f2f6adb9a9e724e07ffd6c17}
-    token-exp: PT15M # 15 minutes
-    refresh-token-exp: P7D # 7 days
-
+    token-exp: PT15M         # 15 minutes
+    refresh-token-exp: P7D   # 7 days
+mail:
+  sender:
+    from: ${MAIL_SENDER_FROM:mentorbookingnotification@gmail.com}
 logging:
   file:
     path: ${LOG_PATH:logs}

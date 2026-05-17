@@ -9,6 +9,7 @@ import com.irrigation_system.iot.entity.WateringLog;
 import com.irrigation_system.iot.repository.DeviceRepository;
 import com.irrigation_system.iot.repository.UserRepository;
 import com.irrigation_system.iot.repository.WateringLogRepository;
+import com.irrigation_system.iot.service.WateringNotificationService;
 import com.irrigation_system.iot.utility.AuthenticationUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +44,9 @@ class WateringServiceImplTest {
 
     @Mock
     private WateringLogRepository wateringLogRepository;
+
+    @Mock
+    private WateringNotificationService wateringNotificationService;
 
     @InjectMocks
     private WateringServiceImpl wateringService;
